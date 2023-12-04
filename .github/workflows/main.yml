@@ -26,14 +26,18 @@ jobs:
       - name: safe.directory
         run:  git config --global --add safe.directory /__w/uv-k5-firmware-custom/uv-k5-firmware-custom        
       - name: Make
-        run:  make
+        run:  AUTHOR_STRING=${{ github.actor }} make -j
       - name: size
         run:  arm-none-eabi-size firmware
+      - name: Size Packet
+        run:  ls -la firmware.packed.bin firmware firmware.bin
+      - name: Add SHORT_SHA env property with commit short sha
+        run: echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
 
       - name: 'Upload Artifact'
         uses: actions/upload-artifact@v3
         with:
-          name: firmware
+          name: firmware_${{ env.SHORT_SHA }}
           path: firmware*.bin
 
       - name: Upload binaries to release
