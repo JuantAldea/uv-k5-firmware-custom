@@ -1,0 +1,4 @@
+CompileFlags:
+    Add:
+        - "-I/usr/arm-none-eabi/include"
+        - "-I external/CMSIS_5/Device/ARM/ARMCM0/Include"

@@ -1,0 +1,24 @@
+---
+Checks: >
+  -*,
+  abseil-*,
+  bugprone-*,
+  google-*,
+  misc-*,
+  modernize-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  clang-diagnostic-*,
+  clang-analyzer-*,
+  cppcoreguidelines-*,
+  -readability-braces-around-statements,
+  -readability-implicit-bool-conversion,
+  -readability-magic-numbers,
+  -cppcoreguidelines-avoid-non-const-global-variables,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -google-readability-braces-around-statements,
+  -bugprone-easily-swappable-parameters,
+
+CheckOptions:
+  - { key: readability-function-cognitive-complexity.IgnoreMacros,  value: 1   }
