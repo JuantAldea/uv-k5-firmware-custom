@@ -954,10 +954,8 @@ static void RenderStill() {
   }
 
   uint8_t x = Rssi2PX(scanInfo.rssi, 0, 121);
-  for (int i = 0; i < x; ++i) {
-    if (i % 5) {
-      gFrameBuffer[2][i + METER_PAD_LEFT] |= 0b00000111;
-    }
+  for (int i = 0; i < x; i+=5) {
+    gFrameBuffer[2][i + METER_PAD_LEFT] |= 0b00000111;
   }
 
   int dbm = Rssi2DBm(scanInfo.rssi);
@@ -1182,9 +1180,7 @@ void APP_RunSpectrum() {
 
   RelaunchScan();
 
-  for (int i = 0; i < 128; ++i) {
-    rssiHistory[i] = 0;
-  }
+  memset(rssiHistory, 0, sizeof(rssiHistory));
 
   isInitialized = true;
 
