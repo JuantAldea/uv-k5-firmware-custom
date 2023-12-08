@@ -14,6 +14,8 @@
  *     limitations under the License.
  */
 
+#include <assert.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "am_fix.h"
@@ -70,6 +72,23 @@
 #include "debugging.h"
 
 static void ProcessKey(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld);
+
+
+void (*ProcessFunctionKeysDisplay[])(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld) = {
+	[DISPLAY_MAIN] = &MAIN_ProcessKeys,
+	[DISPLAY_MENU] = &MENU_ProcessKeys,
+	[DISPLAY_SCANNER] = &SCANNER_ProcessKeys,
+
+#ifdef ENABLE_FMRADIO
+	[DISPLAY_FM] = &FM_ProcessKeys,
+#endif
+
+#ifdef ENABLE_AIRCOPY
+	[DISPLAY_AIRCOPY] = &AIRCOPY_ProcessKeys,
+#endif
+};
+
+static_assert(ARRAY_SIZE(ProcessFunctionKeysDisplay) == DISPLAY_N_ELEM);
 
 
 
@@ -1591,8 +1610,6 @@ static void ALARM_Off(void)
 }
 #endif
 
-
-
 static void ProcessKey(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 {
 	if (Key == KEY_EXIT && !BACKLIGHT_IsOn() && gEeprom.BACKLIGHT_TIME > 0)
@@ -1860,33 +1877,8 @@ static void ProcessKey(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 			}
 #endif
 		}
-		else if (Key != KEY_SIDE1 && Key != KEY_SIDE2) {
-			switch (gScreenToDisplay) {
-				case DISPLAY_MAIN:
-					MAIN_ProcessKeys(Key, bKeyPressed, bKeyHeld);
-					break;
-#ifdef ENABLE_FMRADIO
-				case DISPLAY_FM:
-					FM_ProcessKeys(Key, bKeyPressed, bKeyHeld);
-					break;
-#endif
-				case DISPLAY_MENU:
-					MENU_ProcessKeys(Key, bKeyPressed, bKeyHeld);
-					break;
-
-				case DISPLAY_SCANNER:
-					SCANNER_ProcessKeys(Key, bKeyPressed, bKeyHeld);
-					break;
-
-#ifdef ENABLE_AIRCOPY
-				case DISPLAY_AIRCOPY:
-					AIRCOPY_ProcessKeys(Key, bKeyPressed, bKeyHeld);
-					break;
-#endif
-				case DISPLAY_INVALID:
-				default:
-					break;
-			}
+		else if (Key != KEY_SIDE1 && Key != KEY_SIDE2 && gScreenToDisplay != DISPLAY_INVALID) {
+			ProcessFunctionKeysDisplay[gScreenToDisplay](Key, bKeyPressed, bKeyHeld);
 		}
 		else
 #ifdef ENABLE_AIRCOPY
