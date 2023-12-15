@@ -1135,6 +1135,7 @@ static void CheckKeys(void)
 
 void APP_TimeSlice10ms(void)
 {
+	gNextTimeslice = false;
 	gFlashLightBlinkCounter++;
 
 #ifdef ENABLE_BOOT_BEEPS
@@ -1317,6 +1318,7 @@ void cancelUserInputModes(void)
 // this is called once every 500ms
 void APP_TimeSlice500ms(void)
 {
+	gNextTimeslice_500ms = false;
 	bool exit_menu = false;
 
 	// Skipped authentic device check
