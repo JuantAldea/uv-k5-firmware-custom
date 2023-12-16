@@ -104,9 +104,7 @@ bool RADIO_CheckValidChannel(uint16_t Channel, bool bCheckScanList, uint8_t VFO)
 
 uint8_t RADIO_FindNextChannel(uint8_t Channel, int8_t Direction, bool bCheckScanList, uint8_t VFO)
 {
-	unsigned int i;
-
-	for (i = 0; IS_MR_CHANNEL(i); i++)
+	for (unsigned int i = 0; IS_MR_CHANNEL(i); i++)
 	{
 		if (Channel == 0xFF)
 			Channel = MR_CHANNEL_LAST;

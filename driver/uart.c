@@ -87,9 +87,8 @@ void UART_Init(void)
 void UART_Send(const void *pBuffer, uint32_t Size)
 {
 	const uint8_t *pData = (const uint8_t *)pBuffer;
-	uint32_t i;
 
-	for (i = 0; i < Size; i++) {
+	for (uint32_t i = 0; i < Size; i++) {
 		UART1->TDR = pData[i];
 		while ((UART1->IF & UART_IF_TXFIFO_FULL_MASK) != UART_IF_TXFIFO_FULL_BITS_NOT_SET) {
 		}

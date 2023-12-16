@@ -31,7 +31,6 @@
 
 static void Render(void)
 {
-	unsigned int i;
 	char         String[7];
 
 	memset(gStatusLine,  0, sizeof(gStatusLine));
@@ -39,7 +38,7 @@ static void Render(void)
 
 	strcpy(String, "LOCK");
 	UI_PrintString(String, 0, 127, 1, 10);
-	for (i = 0; i < 6; i++)
+	for (unsigned int i = 0; i < 6; i++)
 		String[i] = (gInputBox[i] == 10) ? '-' : '*';
 	String[6] = 0;
 	UI_PrintString(String, 0, 127, 3, 12);

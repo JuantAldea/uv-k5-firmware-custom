@@ -207,13 +207,11 @@ VOICE_ID_t        gAnotherVoiceID = VOICE_ID_INVALID;
 
 static void AUDIO_PlayVoice(uint8_t VoiceID)
 {
-	unsigned int i;
-
 	GPIO_SetBit(&GPIOA->DATA, GPIOA_PIN_VOICE_0);
 	SYSTEM_DelayMs(20);
 	GPIO_ClearBit(&GPIOA->DATA, GPIOA_PIN_VOICE_0);
 
-	for (i = 0; i < 8; i++)
+	for (unsigned int i = 0; i < 8; i++)
 	{
 		if ((VoiceID & 0x80U) == 0)
 			GPIO_ClearBit(&GPIOA->DATA, GPIOA_PIN_VOICE_1);

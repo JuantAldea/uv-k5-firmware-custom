@@ -93,14 +93,13 @@ RegisterSpec registerSpecs[] = {
 uint16_t statuslineUpdateTimer = 0;
 
 static uint8_t DBm2S(int dbm) {
-  uint8_t i = 0;
   dbm *= -1;
-  for (i = 0; i < ARRAY_SIZE(U8RssiMap); i++) {
+  for (uint8_t i = 0; i < ARRAY_SIZE(U8RssiMap); i++) {
     if (dbm >= U8RssiMap[i]) {
       return i;
     }
   }
-  return i;
+  return ARRAY_SIZE(U8RssiMap);
 }
 
 static int Rssi2DBm(uint16_t rssi) {

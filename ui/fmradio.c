@@ -30,7 +30,6 @@
 
 void UI_DisplayFM(void)
 {
-	unsigned int i;
 	char         String[16];
 
 	memset(gFrameBuffer, 0, sizeof(gFrameBuffer));
@@ -55,7 +54,8 @@ void UI_DisplayFM(void)
 		{
 			if (!gEeprom.FM_IsMrMode)
 			{
-				for (i = 0; i < 20; i++)
+				strcpy(String, "VFO");
+				for (unsigned int i = 0; i < 20; i++)
 				{
 					if (gEeprom.FM_FrequencyPlaying == gFM_Channels[i])
 					{
@@ -63,9 +63,6 @@ void UI_DisplayFM(void)
 						break;
 					}
 				}
-
-				if (i == 20)
-					strcpy(String, "VFO");
 			}
 			else
 				sprintf(String, "MR(CH%02u)", gEeprom.FM_SelectedChannel + 1);

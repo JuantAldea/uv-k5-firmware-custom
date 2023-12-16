@@ -167,8 +167,7 @@ static void SendReply(void *pReply, uint16_t Size)
 	if (bIsEncrypted)
 	{
 		uint8_t     *pBytes = (uint8_t *)pReply;
-		unsigned int i;
-		for (i = 0; i < Size; i++)
+		for (unsigned int i = 0; i < Size; i++)
 			pBytes[i] ^= Obfuscation[i % 16];
 	}
 
@@ -211,17 +210,12 @@ static void SendVersion(void)
 
 static bool IsBadChallenge(const uint32_t *pKey, const uint32_t *pIn, const uint32_t *pResponse)
 {
-	unsigned int i;
-	uint32_t     IV[4];
 
-	IV[0] = 0;
-	IV[1] = 0;
-	IV[2] = 0;
-	IV[3] = 0;
+	uint32_t IV[4] = {0, 0, 0, 0};
 
 	AES_Encrypt(pKey, IV, pIn, IV, true);
 
-	for (i = 0; i < 4; i++)
+	for (unsigned int i = 0; i < 4; i++)
 		if (IV[i] != pResponse[i])
 			return true;
 
@@ -306,8 +300,7 @@ static void CMD_051D(const uint8_t *pBuffer)
 
 	if (!bIsLocked)
 	{
-		unsigned int i;
-		for (i = 0; i < (pCmd->Size / 8); i++)
+		for (unsigned int i = 0; i < (pCmd->Size / 8); i++)
 		{
 			const uint16_t Offset = pCmd->Offset + (i * 8U);
 
@@ -512,8 +505,7 @@ bool UART_IsCommandAvailable(void)
 
 	if (bIsEncrypted)
 	{
-		unsigned int i;
-		for (i = 0; i < (Size + 2u); i++)
+		for (unsigned int i = 0; i < (Size + 2u); i++)
 			UART_Command.Buffer[i] ^= Obfuscation[i % 16];
 	}
 	

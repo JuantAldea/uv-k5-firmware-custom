@@ -80,12 +80,10 @@ void DTMF_clear_RX(void)
 
 bool DTMF_ValidateCodes(char *pCode, const unsigned int size)
 {
-	unsigned int i;
-
 	if (pCode[0] == 0xFF || pCode[0] == 0)
 		return false;
 
-	for (i = 0; i < size; i++)
+	for (unsigned int i = 0; i < size; i++)
 	{
 		if (pCode[i] == 0xFF || pCode[i] == 0)
 		{
@@ -115,21 +113,13 @@ bool DTMF_GetContact(const int Index, char *pContact)
 bool DTMF_FindContact(const char *pContact, char *pResult)
 {
 	char         Contact[16];
-	unsigned int i;
 
-	for (i = 0; i < MAX_DTMF_CONTACTS; i++)
-	{
-		unsigned int j;
-
-		if (!DTMF_GetContact(i, Contact))
+	for (unsigned int i = 0; i < MAX_DTMF_CONTACTS; i++){
+		if (!DTMF_GetContact(i, Contact)) {
 			return false;
+		}
 
-		for (j = 0; j < 3; j++)
-			if (pContact[j] != Contact[j + 8])
-				break;
-
-		if (j == 3)
-		{
+		if (memcmp(pContact, Contact + 8, 3) == 0) {
 			memcpy(pResult, Contact, 8);
 			pResult[8] = 0;
 			return true;
@@ -167,8 +157,7 @@ char DTMF_GetCharacter(const unsigned int code)
 #ifdef ENABLE_DTMF_CALLING
 static bool CompareMessage(const char *pMsg, const char *pTemplate, const unsigned int size, const bool bCheckGroup)
 {
-	unsigned int i;
-	for (i = 0; i < size; i++)
+	for (unsigned int i = 0; i < size; i++)
 	{
 		if (pMsg[i] != pTemplate[i])
 		{
@@ -183,12 +172,13 @@ static bool CompareMessage(const char *pMsg, const char *pTemplate, const unsign
 
 DTMF_CallMode_t DTMF_CheckGroupCall(const char *pMsg, const unsigned int size)
 {
-	unsigned int i;
-	for (i = 0; i < size; i++)
-		if (pMsg[i] == gEeprom.DTMF_GROUP_CALL_CODE)
-			break;
+	for (unsigned int i = 0; i < size; i++) {
+		if (pMsg[i] == gEeprom.DTMF_GROUP_CALL_CODE) {
+			return DTMF_CALL_MODE_GROUP;
+		}
+	}
 
-	return (i < size) ? DTMF_CALL_MODE_GROUP : DTMF_CALL_MODE_NOT_GROUP;
+	return DTMF_CALL_MODE_NOT_GROUP;
 }
 #endif
 

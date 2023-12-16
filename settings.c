@@ -39,7 +39,6 @@ EEPROM_Config_t gEeprom;
 
 void SETTINGS_InitEEPROM(void)
 {
-	unsigned int i;
 	uint8_t      Data[16];
 
 	memset(Data, 0, sizeof(Data));
@@ -235,7 +234,7 @@ void SETTINGS_InitEEPROM(void)
 	EEPROM_ReadBuffer(0x0F18, Data, 8);
 //	gEeprom.SCAN_LIST_DEFAULT = (Data[0] < 2) ? Data[0] : false;
 	gEeprom.SCAN_LIST_DEFAULT = (Data[0] < 3) ? Data[0] : false;  // we now have 'all' channel scan option
-	for (i = 0; i < 2; i++)
+	for (unsigned int i = 0; i < 2; i++)
 	{
 		const unsigned int j = 1 + (i * 3);
 		gEeprom.SCAN_LIST_ENABLED[i]     = (Data[j + 0] < 2) ? Data[j] : false;
@@ -284,7 +283,7 @@ void SETTINGS_InitEEPROM(void)
 	// 0F30..0F3F
 	EEPROM_ReadBuffer(0x0F30, gCustomAesKey, sizeof(gCustomAesKey));
 	bHasCustomAesKey = false;
-	for (i = 0; i < ARRAY_SIZE(gCustomAesKey); i++)
+	for (unsigned int i = 0; i < ARRAY_SIZE(gCustomAesKey); i++)
 	{
 		if (gCustomAesKey[i] != 0xFFFFFFFFu)
 		{
@@ -391,12 +390,11 @@ void SETTINGS_FetchChannelName(char *s, const int channel)
 
 void SETTINGS_FactoryReset(bool bIsAll)
 {
-	uint16_t i;
 	uint8_t  Template[8];
 
 	memset(Template, 0xFF, sizeof(Template));
 
-	for (i = 0x0C80; i < 0x1E00; i += 8)
+	for (uint16_t i = 0x0C80; i < 0x1E00; i += 8)
 	{
 		if (
 			!(i >= 0x0EE0 && i < 0x0F18) &&         // ANI ID + DTMF codes
@@ -423,7 +421,7 @@ void SETTINGS_FactoryReset(bool bIsAll)
 		RADIO_InitInfo(gRxVfo, FREQ_CHANNEL_FIRST + BAND6_400MHz, 43350000);
 
 		// set the first few memory channels
-		for (i = 0; i < ARRAY_SIZE(gDefaultFrequencyTable); i++)
+		for (unsigned int i = 0; i < ARRAY_SIZE(gDefaultFrequencyTable); i++)
 		{
 			const uint32_t Frequency   = gDefaultFrequencyTable[i];
 			gRxVfo->freq_config_RX.Frequency = Frequency;
@@ -435,27 +433,27 @@ void SETTINGS_FactoryReset(bool bIsAll)
 }
 
 #ifdef ENABLE_FMRADIO
-	void SETTINGS_SaveFM(void)
+void SETTINGS_SaveFM(void)
+{
+
+	struct
 	{
-		unsigned int i;
+		uint16_t Frequency;
+		uint8_t  Channel;
+		bool     IsChannelSelected;
+		uint8_t  Padding[4];
+	} State;
 
-		struct
-		{
-			uint16_t Frequency;
-			uint8_t  Channel;
-			bool     IsChannelSelected;
-			uint8_t  Padding[4];
-		} State;
+	memset(&State, 0xFF, sizeof(State));
+	State.Channel           = gEeprom.FM_SelectedChannel;
+	State.Frequency         = gEeprom.FM_SelectedFrequency;
+	State.IsChannelSelected = gEeprom.FM_IsMrMode;
 
-		memset(&State, 0xFF, sizeof(State));
-		State.Channel           = gEeprom.FM_SelectedChannel;
-		State.Frequency         = gEeprom.FM_SelectedFrequency;
-		State.IsChannelSelected = gEeprom.FM_IsMrMode;
-
-		EEPROM_WriteBuffer(0x0E88, &State);
-		for (i = 0; i < 5; i++)
-			EEPROM_WriteBuffer(0x0E40 + (i * 8), &gFM_Channels[i * 4]);
+	EEPROM_WriteBuffer(0x0E88, &State);
+	for (unsigned int i = 0; i < 5; i++) {
+		EEPROM_WriteBuffer(0x0E40 + (i * 8), &gFM_Channels[i * 4]);
 	}
+}
 #endif
 
 void SETTINGS_SaveVfoIndices(void)

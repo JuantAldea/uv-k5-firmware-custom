@@ -38,15 +38,13 @@ uint16_t BK1080_FrequencyDeviation;
 
 void BK1080_Init(uint16_t Frequency, bool bDoScan)
 {
-	unsigned int i;
-
 	if (bDoScan)
 	{
 		GPIO_ClearBit(&GPIOB->DATA, GPIOB_PIN_BK1080);
 
 		if (!gIsInitBK1080)
 		{
-			for (i = 0; i < ARRAY_SIZE(BK1080_RegisterTable); i++)
+			for (unsigned int i = 0; i < ARRAY_SIZE(BK1080_RegisterTable); i++)
 				BK1080_WriteRegister(i, BK1080_RegisterTable[i]);
 
 			SYSTEM_DelayMs(250);

@@ -120,15 +120,14 @@ void BK4819_Init(void)
 
 static uint16_t BK4819_ReadU16(void)
 {
-	unsigned int i;
-	uint16_t     Value;
+	uint16_t Value;
 
 	PORTCON_PORTC_IE = (PORTCON_PORTC_IE & ~PORTCON_PORTC_IE_C2_MASK) | PORTCON_PORTC_IE_C2_BITS_ENABLE;
 	GPIOC->DIR = (GPIOC->DIR & ~GPIO_DIR_2_MASK) | GPIO_DIR_2_BITS_INPUT;
 	SYSTICK_DelayUs(1);
 
 	Value = 0;
-	for (i = 0; i < 16; i++)
+	for (unsigned int i = 0; i < 16; i++)
 	{
 		Value <<= 1;
 		Value |= GPIO_CheckBit(&GPIOC->DATA, GPIOC_PIN_BK4819_SDA);
@@ -191,10 +190,8 @@ void BK4819_WriteRegister(BK4819_REGISTER_t Register, uint16_t Data)
 
 void BK4819_WriteU8(uint8_t Data)
 {
-	unsigned int i;
-
 	GPIO_ClearBit(&GPIOC->DATA, GPIOC_PIN_BK4819_SCL);
-	for (i = 0; i < 8; i++)
+	for (unsigned int i = 0; i < 8; i++)
 	{
 		if ((Data & 0x80) == 0)
 			GPIO_ClearBit(&GPIOC->DATA, GPIOC_PIN_BK4819_SDA);
@@ -214,10 +211,8 @@ void BK4819_WriteU8(uint8_t Data)
 
 void BK4819_WriteU16(uint16_t Data)
 {
-	unsigned int i;
-
 	GPIO_ClearBit(&GPIOC->DATA, GPIOC_PIN_BK4819_SCL);
-	for (i = 0; i < 16; i++)
+	for (unsigned int i = 0; i < 16; i++)
 	{
 		if ((Data & 0x8000) == 0)
 			GPIO_ClearBit(&GPIOC->DATA, GPIOC_PIN_BK4819_SDA);
@@ -1295,12 +1290,10 @@ void BK4819_PlayDTMF(char Code)
 
 void BK4819_PlayDTMFString(const char *pString, bool bDelayFirst, uint16_t FirstCodePersistTime, uint16_t HashCodePersistTime, uint16_t CodePersistTime, uint16_t CodeInternalTime)
 {
-	unsigned int i;
-
 	if (pString == NULL)
 		return;
 
-	for (i = 0; pString[i]; i++)
+	for (unsigned int i = 0; pString[i]; i++)
 	{
 		uint16_t Delay;
 		BK4819_PlayDTMF(pString[i]);
@@ -1659,7 +1652,6 @@ uint8_t BK4819_GetCTCType(void)
 
 void BK4819_SendFSKData(uint16_t *pData)
 {
-	unsigned int i;
 	uint8_t Timeout = 200;
 
 	SYSTEM_DelayMs(20);
@@ -1668,7 +1660,7 @@ void BK4819_SendFSKData(uint16_t *pData)
 	BK4819_WriteRegister(BK4819_REG_59, 0x8068);
 	BK4819_WriteRegister(BK4819_REG_59, 0x0068);
 
-	for (i = 0; i < 36; i++)
+	for (unsigned int i = 0; i < 36; i++)
 		BK4819_WriteRegister(BK4819_REG_5F, pData[i]);
 
 	SYSTEM_DelayMs(20);
@@ -1742,8 +1734,6 @@ void BK4819_PlayRoger(void)
 
 void BK4819_PlayRogerMDC(void)
 {
-	unsigned int i;
-
 	BK4819_SetAF(BK4819_AF_MUTE);
 
 	BK4819_WriteRegister(BK4819_REG_58, 0x37C3);   // FSK Enable,
@@ -1762,7 +1752,7 @@ void BK4819_PlayRogerMDC(void)
 	BK4819_WriteRegister(BK4819_REG_5C, 0xAA30);   // Disable CRC
 
 	// Send the data from the roger table
-	for (i = 0; i < 7; i++)
+	for (unsigned int i = 0; i < 7; i++)
 		BK4819_WriteRegister(BK4819_REG_5F, FSK_RogerTable[i]);
 
 	SYSTEM_DelayMs(20);

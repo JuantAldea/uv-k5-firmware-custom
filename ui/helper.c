@@ -26,8 +26,6 @@
 
 void UI_GenerateChannelString(char *pString, const uint8_t Channel)
 {
-	unsigned int i;
-
 	if (gInputBoxIndex == 0)
 	{
 		sprintf(pString, "CH-%02u", Channel + 1);
@@ -37,7 +35,7 @@ void UI_GenerateChannelString(char *pString, const uint8_t Channel)
 	pString[0] = 'C';
 	pString[1] = 'H';
 	pString[2] = '-';
-	for (i = 0; i < 2; i++)
+	for (unsigned int i = 0; i < 2; i++)
 		pString[i + 3] = (gInputBox[i] == 10) ? '-' : gInputBox[i] + '0';
 }
 
@@ -45,8 +43,7 @@ void UI_GenerateChannelStringEx(char *pString, const bool bShowPrefix, const uin
 {
 	if (gInputBoxIndex > 0)
 	{
-		unsigned int i;
-		for (i = 0; i < 3; i++)
+		for (unsigned int i = 0; i < 3; i++)
 			pString[i] = (gInputBox[i] == 10) ? '-' : gInputBox[i] + '0';
 		return;
 	}
@@ -62,13 +59,12 @@ void UI_GenerateChannelStringEx(char *pString, const bool bShowPrefix, const uin
 
 void UI_PrintString(const char *pString, uint8_t Start, uint8_t End, uint8_t Line, uint8_t Width)
 {
-	size_t i;
 	size_t Length = strlen(pString);
 
 	if (End > Start)
 		Start += (((End - Start) - (Length * Width)) + 1) / 2;
 
-	for (i = 0; i < Length; i++)
+	for (size_t i = 0; i < Length; i++)
 	{
 		const unsigned int ofs   = (unsigned int)Start + (i * Width);
 		if (pString[i] > ' ' && pString[i] < 127)
@@ -83,7 +79,6 @@ void UI_PrintString(const char *pString, uint8_t Start, uint8_t End, uint8_t Lin
 void UI_PrintStringSmall(const char *pString, uint8_t Start, uint8_t End, uint8_t Line)
 {
 	const size_t Length = strlen(pString);
-	size_t       i;
 
 	const unsigned int char_width   = ARRAY_SIZE(gFontSmall[0]);
 	const unsigned int char_spacing = char_width + 1;
@@ -93,7 +88,7 @@ void UI_PrintStringSmall(const char *pString, uint8_t Start, uint8_t End, uint8_
 
 
 	uint8_t            *pFb         = gFrameBuffer[Line] + Start;
-	for (i = 0; i < Length; i++)
+	for (size_t i = 0; i < Length; i++)
 	{
 		if (pString[i] > ' ')
 		{
@@ -108,15 +103,15 @@ void UI_PrintStringSmall(const char *pString, uint8_t Start, uint8_t End, uint8_
 	void UI_PrintStringSmallBold(const char *pString, uint8_t Start, uint8_t End, uint8_t Line)
 	{
 		const size_t Length = strlen(pString);
-		size_t       i;
-	
+
 		if (End > Start)
 			Start += (((End - Start) - (Length * 8)) + 1) / 2;
 	
 		const unsigned int char_width   = ARRAY_SIZE(gFontSmallBold[0]);
 		const unsigned int char_spacing = char_width + 1;
-		uint8_t            *pFb         = gFrameBuffer[Line] + Start;
-		for (i = 0; i < Length; i++)
+		uint8_t *pFb = gFrameBuffer[Line] + Start;
+		
+		for (size_t i = 0; i < Length; i++)
 		{
 			if (pString[i] > ' ')
 			{
@@ -130,10 +125,9 @@ void UI_PrintStringSmall(const char *pString, uint8_t Start, uint8_t End, uint8_
 
 void UI_PrintStringSmallBuffer(const char *pString, uint8_t *buffer)
 {
-	size_t i;
 	const unsigned int char_width   = ARRAY_SIZE(gFontSmall[0]);
 	const unsigned int char_spacing = char_width + 1;
-	for (i = 0; i < strlen(pString); i++)
+	for (size_t i = 0; i < strlen(pString); i++)
 	{
 		if (pString[i] > ' ')
 		{

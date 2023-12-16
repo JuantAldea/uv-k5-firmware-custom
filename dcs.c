@@ -44,9 +44,8 @@ const uint16_t DCS_Options[104] = {
 
 static uint32_t DCS_CalculateGolay(uint32_t CodeWord)
 {
-	unsigned int i;
 	uint32_t Word = CodeWord;
-	for (i = 0; i < 12; i++)
+	for (unsigned int i = 0; i < 12; i++)
 	{
 		Word <<= 1;
 		if (Word & 0x1000)
@@ -65,15 +64,13 @@ uint32_t DCS_GetGolayCodeWord(DCS_CodeType_t CodeType, uint8_t Option)
 
 uint8_t DCS_GetCdcssCode(uint32_t Code)
 {
-	unsigned int i;
-	for (i = 0; i < 23; i++)
+	for (unsigned int i = 0; i < 23; i++)
 	{
 		uint32_t Shift;
 
 		if (((Code >> 9) & 0x7U) == 4)
 		{
-			unsigned int j;
-			for (j = 0; j < ARRAY_SIZE(DCS_Options); j++)
+			for (unsigned int j = 0; j < ARRAY_SIZE(DCS_Options); j++)
 				if (DCS_Options[j] == (Code & 0x1FF))
 					if (DCS_GetGolayCodeWord(2, j) == Code)
 						return j;
@@ -90,11 +87,10 @@ uint8_t DCS_GetCdcssCode(uint32_t Code)
 
 uint8_t DCS_GetCtcssCode(int Code)
 {
-	unsigned int i;
 	uint8_t      Result = 0xFF;
 	int          Smallest = ARRAY_SIZE(CTCSS_Options);
 
-	for (i = 0; i < ARRAY_SIZE(CTCSS_Options); i++)
+	for (unsigned int i = 0; i < ARRAY_SIZE(CTCSS_Options); i++)
 	{
 		int Delta = Code - CTCSS_Options[i];
 		if (Delta < 0)
