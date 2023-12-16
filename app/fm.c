@@ -67,17 +67,18 @@ bool FM_CheckValidChannel(uint8_t Channel)
 
 uint8_t FM_FindNextChannel(uint8_t Channel, uint8_t Direction)
 {
-	unsigned int i;
-
-	for (i = 0; i < ARRAY_SIZE(gFM_Channels); i++)
+	for (unsigned int i = 0; i < ARRAY_SIZE(gFM_Channels); i++)
 	{
-		if (Channel == 0xFF)
+		if (Channel == 0xFF) {
 			Channel = ARRAY_SIZE(gFM_Channels) - 1;
-		else
-		if (Channel >= ARRAY_SIZE(gFM_Channels))
+		} else if (Channel >= ARRAY_SIZE(gFM_Channels)) {
 			Channel = 0;
-		if (FM_CheckValidChannel(Channel))
+		}
+
+		if (FM_CheckValidChannel(Channel)) {
 			return Channel;
+		}
+
 		Channel += Direction;
 	}
 
@@ -88,17 +89,19 @@ int FM_ConfigureChannelState(void)
 {
 	gEeprom.FM_FrequencyPlaying = gEeprom.FM_SelectedFrequency;
 
-	if (gEeprom.FM_IsMrMode)
-	{
-		const uint8_t Channel = FM_FindNextChannel(gEeprom.FM_SelectedChannel, FM_CHANNEL_UP);
-		if (Channel == 0xFF)
-		{
-			gEeprom.FM_IsMrMode = false;
-			return -1;
-		}
-		gEeprom.FM_SelectedChannel  = Channel;
-		gEeprom.FM_FrequencyPlaying = gFM_Channels[Channel];
+	if (!gEeprom.FM_IsMrMode) {
+		return 0;
 	}
+
+	const uint8_t Channel = FM_FindNextChannel(gEeprom.FM_SelectedChannel, FM_CHANNEL_UP);
+
+	if (Channel == 0xFF) {
+		gEeprom.FM_IsMrMode = false;
+		return -1;
+	}
+
+	gEeprom.FM_SelectedChannel  = Channel;
+	gEeprom.FM_FrequencyPlaying = gFM_Channels[Channel];
 
 	return 0;
 }
@@ -120,12 +123,12 @@ void FM_TurnOff(void)
 
 void FM_EraseChannels(void)
 {
-	unsigned int i;
-	uint8_t      Template[8];
+	uint8_t Template[8];
 
 	memset(Template, 0xFF, sizeof(Template));
-	for (i = 0; i < 5; i++)
+	for (unsigned int i = 0; i < 5; i++) {
 		EEPROM_WriteBuffer(0x0E40 + (i * 8), Template);
+	}
 
 	memset(gFM_Channels, 0xFF, sizeof(gFM_Channels));
 }
@@ -147,12 +150,8 @@ void FM_Tune(uint16_t Frequency, int8_t Step, bool bFlag)
 	if (!bFlag)
 	{
 		Frequency += Step;
-		if (Frequency < gEeprom.FM_LowerLimit)
-			Frequency = gEeprom.FM_UpperLimit;
-		else
-		if (Frequency > gEeprom.FM_UpperLimit)
-			Frequency = gEeprom.FM_LowerLimit;
-
+		Frequency = MIN(Frequency, gEeprom.FM_UpperLimit);
+		Frequency = MAX(Frequency, gEeprom.FM_LowerLimit);
 		gEeprom.FM_FrequencyPlaying = Frequency;
 	}
 

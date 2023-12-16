@@ -368,6 +368,8 @@ Skip:
 
 void AUDIO_PlayQueuedVoice(void)
 {
+	gFlagPlayQueuedVoice = false;
+
 	uint8_t VoiceID;
 	uint8_t Delay;
 	bool    Skip;
