@@ -50,6 +50,7 @@
 #include "ui/lock.h"
 #include "ui/welcome.h"
 #include "ui/menu.h"
+
 void _putchar(__attribute__((unused)) char c)
 {
 
