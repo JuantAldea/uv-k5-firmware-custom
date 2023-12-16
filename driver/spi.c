@@ -18,7 +18,7 @@
 #include "bsp/dp32g030/spi.h"
 #include "bsp/dp32g030/syscon.h"
 #include "bsp/dp32g030/irq.h"
-#include "driver/spi.h"
+#include "spi.h"
 
 void SPI0_Init(void)
 {
@@ -113,4 +113,3 @@ void SPI_Enable(volatile uint32_t *pCR)
 {
 	*pCR = (*pCR & ~SPI_CR_SPE_MASK) | SPI_CR_SPE_BITS_ENABLE;
 }
-

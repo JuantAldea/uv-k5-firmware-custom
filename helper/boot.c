@@ -25,7 +25,7 @@
 #include "driver/gpio.h"
 #include "driver/system.h"
 #include "helper/boot.h"
-#include "misc.h"
+#include "../misc.h"
 #include "radio.h"
 #include "settings.h"
 #include "ui/menu.h"

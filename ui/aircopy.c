@@ -21,11 +21,11 @@
 #include "app/aircopy.h"
 #include "driver/st7565.h"
 #include "external/printf/printf.h"
-#include "misc.h"
+#include "../misc.h"
 #include "radio.h"
-#include "ui/aircopy.h"
-#include "ui/helper.h"
-#include "ui/inputbox.h"
+#include "aircopy.h"
+#include "helper.h"
+#include "inputbox.h"
 
 void UI_DisplayAircopy(void)
 {

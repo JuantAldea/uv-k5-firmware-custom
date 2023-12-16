@@ -17,9 +17,9 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "driver/eeprom.h"
-#include "driver/i2c.h"
-#include "driver/system.h"
+#include "eeprom.h"
+#include "i2c.h"
+#include "system.h"
 
 void EEPROM_ReadBuffer(uint16_t Address, void *pBuffer, uint8_t Size)
 {

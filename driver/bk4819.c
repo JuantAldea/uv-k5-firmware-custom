@@ -24,11 +24,8 @@
 #include "gpio.h"
 #include "system.h"
 #include "systick.h"
+#include "../misc.h"
 
-
-#ifndef ARRAY_SIZE
-	#define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
-#endif
 
 static const uint16_t FSK_RogerTable[7] = {0xF1A2, 0x7446, 0x61A4, 0x6544, 0x4E8A, 0xE044, 0xEA84};
 
@@ -129,6 +126,7 @@ static uint16_t BK4819_ReadU16(void)
 	PORTCON_PORTC_IE = (PORTCON_PORTC_IE & ~PORTCON_PORTC_IE_C2_MASK) | PORTCON_PORTC_IE_C2_BITS_ENABLE;
 	GPIOC->DIR = (GPIOC->DIR & ~GPIO_DIR_2_MASK) | GPIO_DIR_2_BITS_INPUT;
 	SYSTICK_DelayUs(1);
+
 	Value = 0;
 	for (i = 0; i < 16; i++)
 	{

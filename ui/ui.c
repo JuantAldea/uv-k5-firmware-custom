@@ -23,19 +23,18 @@
 	#include "app/fm.h"
 #endif
 #include "driver/keyboard.h"
-#include "misc.h"
+#include "../misc.h"
 #ifdef ENABLE_AIRCOPY
 	#include "ui/aircopy.h"
 #endif
 #ifdef ENABLE_FMRADIO
-	#include "ui/fmradio.h"
+	#include "fmradio.h"
 #endif
-#include "ui/inputbox.h"
-#include "ui/main.h"
-#include "ui/menu.h"
-#include "ui/scanner.h"
-#include "ui/ui.h"
-#include "../misc.h"
+#include "inputbox.h"
+#include "main.h"
+#include "menu.h"
+#include "scanner.h"
+#include "ui.h"
 
 GUI_DisplayType_t gScreenToDisplay;
 GUI_DisplayType_t gRequestDisplayScreen = DISPLAY_INVALID;

@@ -14,7 +14,7 @@
  *     limitations under the License.
  */
 
-#include "app/spectrum.h"
+#include "spectrum.h"
 #include "am_fix.h"
 #include "audio.h"
 #include "driver/backlight.h"

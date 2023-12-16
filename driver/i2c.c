@@ -16,9 +16,9 @@
 
 #include "bsp/dp32g030/gpio.h"
 #include "bsp/dp32g030/portcon.h"
-#include "driver/gpio.h"
-#include "driver/i2c.h"
-#include "driver/systick.h"
+#include "gpio.h"
+#include "i2c.h"
+#include "systick.h"
 
 void I2C_Start(void)
 {
@@ -166,4 +166,3 @@ int I2C_WriteBuffer(const void *pBuffer, uint8_t Size)
 
 	return 0;
 }
-

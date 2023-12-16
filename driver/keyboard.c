@@ -16,11 +16,11 @@
  */
 
 #include "bsp/dp32g030/gpio.h"
-#include "driver/gpio.h"
-#include "driver/keyboard.h"
-#include "driver/systick.h"
-#include "driver/i2c.h"
-#include "misc.h"
+#include "gpio.h"
+#include "keyboard.h"
+#include "systick.h"
+#include "i2c.h"
+#include "../misc.h"
 
 KEY_Code_t gKeyReading0     = KEY_INVALID;
 KEY_Code_t gKeyReading1     = KEY_INVALID;

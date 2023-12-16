@@ -18,23 +18,20 @@
 
 #include <string.h>
 
-#include "app/action.h"
-#include "app/fm.h"
-#include "app/generic.h"
+#include "action.h"
+#include "fm.h"
+#include "generic.h"
 #include "audio.h"
 #include "bsp/dp32g030/gpio.h"
 #include "driver/bk1080.h"
 #include "driver/eeprom.h"
 #include "driver/gpio.h"
 #include "functions.h"
-#include "misc.h"
+#include "../misc.h"
 #include "settings.h"
 #include "ui/inputbox.h"
 #include "ui/ui.h"
 
-#ifndef ARRAY_SIZE
-	#define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
-#endif
 
 uint16_t          gFM_Channels[20];
 bool              gFmRadioMode;

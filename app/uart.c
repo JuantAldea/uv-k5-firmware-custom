@@ -20,9 +20,9 @@
 	#include "ARMCM0.h"
 #endif
 #ifdef ENABLE_FMRADIO
-	#include "app/fm.h"
+	#include "fm.h"
 #endif
-#include "app/uart.h"
+#include "uart.h"
 #include "board.h"
 #include "bsp/dp32g030/dma.h"
 #include "bsp/dp32g030/gpio.h"
@@ -34,7 +34,7 @@
 #include "driver/gpio.h"
 #include "driver/uart.h"
 #include "functions.h"
-#include "misc.h"
+#include "../misc.h"
 #include "settings.h"
 #include "version.h"
 

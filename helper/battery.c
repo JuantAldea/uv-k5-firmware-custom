@@ -20,7 +20,7 @@
 #include "driver/backlight.h"
 #include "driver/st7565.h"
 #include "functions.h"
-#include "misc.h"
+#include "../misc.h"
 #include "settings.h"
 #include "ui/battery.h"
 #include "ui/menu.h"

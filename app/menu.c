@@ -19,10 +19,10 @@
 #if !defined(ENABLE_OVERLAY)
 	#include "ARMCM0.h"
 #endif
-#include "app/dtmf.h"
-#include "app/generic.h"
-#include "app/menu.h"
-#include "app/scanner.h"
+#include "dtmf.h"
+#include "generic.h"
+#include "menu.h"
+#include "scanner.h"
 #include "audio.h"
 #include "board.h"
 #include "bsp/dp32g030/gpio.h"
@@ -33,7 +33,7 @@
 #include "driver/keyboard.h"
 #include "frequencies.h"
 #include "helper/battery.h"
-#include "misc.h"
+#include "../misc.h"
 #include "settings.h"
 #if defined(ENABLE_OVERLAY)
 	#include "sram-overlay.h"
@@ -42,9 +42,7 @@
 #include "ui/menu.h"
 #include "ui/ui.h"
 
-#ifndef ARRAY_SIZE
-	#define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
-#endif
+
 
 uint8_t gUnlockAllTxConfCnt;
 

@@ -14,7 +14,7 @@
  *     limitations under the License.
  */
 
-#include "driver/flash.h"
+#include "flash.h"
 #include "sram-overlay.h"
 
 void FLASH_Init(FLASH_READ_MODE ReadMode)

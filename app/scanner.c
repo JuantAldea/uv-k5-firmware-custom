@@ -14,15 +14,15 @@
  *     limitations under the License.
  */
 
-#include "app/app.h"
-#include "app/dtmf.h"
-#include "app/generic.h"
-#include "app/menu.h"
-#include "app/scanner.h"
+#include "app.h"
+#include "dtmf.h"
+#include "generic.h"
+#include "menu.h"
+#include "scanner.h"
 #include "audio.h"
 #include "driver/bk4819.h"
 #include "frequencies.h"
-#include "misc.h"
+#include "../misc.h"
 #include "radio.h"
 #include "settings.h"
 #include "ui/inputbox.h"

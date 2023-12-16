@@ -29,12 +29,12 @@
 #include "external/printf/printf.h"
 #include "frequencies.h"
 #include "helper/battery.h"
-#include "misc.h"
+#include "../misc.h"
 #include "settings.h"
-#include "ui/helper.h"
-#include "ui/inputbox.h"
-#include "ui/menu.h"
-#include "ui/ui.h"
+#include "helper.h"
+#include "inputbox.h"
+#include "menu.h"
+#include "ui.h"
 
 const t_menu_item MenuList[] =
 {

@@ -21,10 +21,10 @@
 #include "external/printf/printf.h"
 #include "helper/battery.h"
 #include "settings.h"
-#include "misc.h"
-#include "ui/helper.h"
-#include "ui/welcome.h"
-#include "ui/status.h"
+#include "../misc.h"
+#include "helper.h"
+#include "welcome.h"
+#include "status.h"
 #include "version.h"
 
 void UI_DisplayReleaseKeys(void)
@@ -83,4 +83,3 @@ void UI_DisplayWelcome(void)
 		ST7565_BlitFullScreen();
 	}
 }
-

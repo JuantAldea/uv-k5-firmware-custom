@@ -29,13 +29,13 @@
 #include "external/printf/printf.h"
 #include "functions.h"
 #include "helper/battery.h"
-#include "misc.h"
+#include "../misc.h"
 #include "radio.h"
 #include "settings.h"
-#include "ui/helper.h"
-#include "ui/inputbox.h"
-#include "ui/main.h"
-#include "ui/ui.h"
+#include "helper.h"
+#include "inputbox.h"
+#include "main.h"
+#include "ui.h"
 
 center_line_t center_line = CENTER_LINE_NONE;
 

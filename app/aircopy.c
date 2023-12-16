@@ -16,13 +16,13 @@
 
 #ifdef ENABLE_AIRCOPY
 
-#include "app/aircopy.h"
+#include "aircopy.h"
 #include "audio.h"
 #include "driver/bk4819.h"
 #include "driver/crc.h"
 #include "driver/eeprom.h"
 #include "frequencies.h"
-#include "misc.h"
+#include "../misc.h"
 #include "radio.h"
 #include "ui/helper.h"
 #include "ui/inputbox.h"

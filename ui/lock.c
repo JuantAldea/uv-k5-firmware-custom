@@ -23,11 +23,11 @@
 #include "audio.h"
 #include "driver/keyboard.h"
 #include "driver/st7565.h"
-#include "misc.h"
+#include "../misc.h"
 #include "settings.h"
-#include "ui/helper.h"
-#include "ui/inputbox.h"
-#include "ui/lock.h"
+#include "helper.h"
+#include "inputbox.h"
+#include "lock.h"
 
 static void Render(void)
 {

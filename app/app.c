@@ -19,26 +19,26 @@
 #include <string.h>
 
 #include "am_fix.h"
-#include "app/action.h"
+#include "action.h"
 
 #ifdef ENABLE_AIRCOPY
-	#include "app/aircopy.h"
+	#include "aircopy.h"
 #endif
-#include "app/app.h"
-#include "app/chFrScanner.h"
-#include "app/dtmf.h"
+#include "app.h"
+#include "chFrScanner.h"
+#include "dtmf.h"
 #ifdef ENABLE_FLASHLIGHT
-	#include "app/flashlight.h"
+	#include "flashlight.h"
 #endif
 #ifdef ENABLE_FMRADIO
-	#include "app/fm.h"
+	#include "fm.h"
 #endif
-#include "app/generic.h"
-#include "app/main.h"
-#include "app/menu.h"
-#include "app/scanner.h"
+#include "generic.h"
+#include "main.h"
+#include "menu.h"
+#include "scanner.h"
 #ifdef ENABLE_UART
-	#include "app/uart.h"
+	#include "uart.h"
 #endif
 #include "ARMCM0.h"
 #include "audio.h"
@@ -58,7 +58,7 @@
 #include "frequencies.h"
 #include "functions.h"
 #include "helper/battery.h"
-#include "misc.h"
+#include "../misc.h"
 #include "radio.h"
 #include "settings.h"
 

@@ -19,11 +19,11 @@
 
 #include "bsp/dp32g030/gpio.h"
 #include "bsp/dp32g030/spi.h"
-#include "driver/gpio.h"
-#include "driver/spi.h"
-#include "driver/st7565.h"
-#include "driver/system.h"
-#include "misc.h"
+#include "gpio.h"
+#include "spi.h"
+#include "st7565.h"
+#include "system.h"
+#include "../misc.h"
 
 uint8_t gStatusLine[LCD_WIDTH];
 uint8_t gFrameBuffer[FRAME_LINES][LCD_WIDTH];

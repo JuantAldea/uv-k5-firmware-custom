@@ -17,18 +17,18 @@
 #include <assert.h>
 #include <string.h>
 
-#include "app/action.h"
-#include "app/app.h"
-#include "app/chFrScanner.h"
-#include "app/common.h"
-#include "app/dtmf.h"
+#include "action.h"
+#include "app.h"
+#include "chFrScanner.h"
+#include "common.h"
+#include "dtmf.h"
 #ifdef ENABLE_FLASHLIGHT
-	#include "app/flashlight.h"
+	#include "flashlight.h"
 #endif
 #ifdef ENABLE_FMRADIO
-	#include "app/fm.h"
+	#include "fm.h"
 #endif
-#include "app/scanner.h"
+#include "scanner.h"
 #include "audio.h"
 #include "bsp/dp32g030/gpio.h"
 #ifdef ENABLE_FMRADIO
@@ -38,7 +38,7 @@
 #include "driver/gpio.h"
 #include "driver/backlight.h"
 #include "functions.h"
-#include "misc.h"
+#include "../misc.h"
 #include "settings.h"
 #include "ui/inputbox.h"
 #include "ui/ui.h"

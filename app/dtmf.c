@@ -17,11 +17,11 @@
 #include <string.h>
 #include <stdio.h>   // NULL
 
-#include "app/chFrScanner.h"
+#include "chFrScanner.h"
 #ifdef ENABLE_FMRADIO
-	#include "app/fm.h"
+	#include "fm.h"
 #endif
-#include "app/scanner.h"
+#include "scanner.h"
 #include "bsp/dp32g030/gpio.h"
 #include "audio.h"
 #include "driver/bk4819.h"
@@ -30,7 +30,7 @@
 #include "driver/system.h"
 #include "dtmf.h"
 #include "external/printf/printf.h"
-#include "misc.h"
+#include "../misc.h"
 #include "settings.h"
 #include "ui/ui.h"
 

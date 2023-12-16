@@ -20,7 +20,7 @@
 #include "bitmaps.h"
 #include "driver/st7565.h"
 #include "functions.h"
-#include "ui/battery.h"
+#include "battery.h"
 #include "../misc.h"
 
 void UI_DrawBattery(uint8_t* bitmap, uint8_t level, uint8_t blink)

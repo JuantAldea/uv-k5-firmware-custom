@@ -16,19 +16,19 @@
 
 #include <string.h>
 
-#include "app/action.h"
-#include "app/app.h"
-#include "app/chFrScanner.h"
-#include "app/common.h"
+#include "action.h"
+#include "app.h"
+#include "chFrScanner.h"
+#include "common.h"
 #ifdef ENABLE_FMRADIO
-	#include "app/fm.h"
+	#include "fm.h"
 #endif
-#include "app/generic.h"
-#include "app/main.h"
-#include "app/scanner.h"
+#include "generic.h"
+#include "main.h"
+#include "scanner.h"
 
 #ifdef ENABLE_SPECTRUM
-#include "app/spectrum.h"
+#include "spectrum.h"
 #endif
 
 #include "audio.h"
@@ -36,7 +36,7 @@
 #include "driver/bk4819.h"
 #include "dtmf.h"
 #include "frequencies.h"
-#include "misc.h"
+#include "../misc.h"
 #include "radio.h"
 #include "settings.h"
 #include "ui/inputbox.h"

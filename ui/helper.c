@@ -19,13 +19,10 @@
 #include "driver/st7565.h"
 #include "external/printf/printf.h"
 #include "font.h"
-#include "ui/helper.h"
-#include "ui/inputbox.h"
-#include "misc.h"
+#include "helper.h"
+#include "inputbox.h"
+#include "../misc.h"
 
-#ifndef ARRAY_SIZE
-	#define ARRAY_SIZE(arr) (sizeof(arr)/sizeof((arr)[0]))
-#endif
 
 void UI_GenerateChannelString(char *pString, const uint8_t Channel)
 {

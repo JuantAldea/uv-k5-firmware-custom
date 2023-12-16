@@ -16,7 +16,7 @@
 
 #include <string.h>
 
-#include "ui/inputbox.h"
+#include "inputbox.h"
 
 char    gInputBox[8];
 char    inputBoxAscii[9];

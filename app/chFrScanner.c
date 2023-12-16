@@ -1,8 +1,8 @@
 
-#include "app/app.h"
-#include "app/chFrScanner.h"
+#include "app.h"
+#include "chFrScanner.h"
 #include "functions.h"
-#include "misc.h"
+#include "../misc.h"
 #include "settings.h"
 
 int8_t            gScanStateDir;

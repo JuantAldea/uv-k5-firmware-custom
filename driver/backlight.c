@@ -18,7 +18,7 @@
 #include "bsp/dp32g030/gpio.h"
 #include "bsp/dp32g030/pwmplus.h"
 #include "bsp/dp32g030/portcon.h"
-#include "driver/gpio.h"
+#include "gpio.h"
 #include "settings.h"
 
 // this is decremented once every 500ms

@@ -27,12 +27,12 @@
 #include "external/printf/printf.h"
 #include "functions.h"
 #include "helper/battery.h"
-#include "misc.h"
+#include "../misc.h"
 #include "settings.h"
-#include "ui/battery.h"
-#include "ui/helper.h"
-#include "ui/ui.h"
-#include "ui/status.h"
+#include "battery.h"
+#include "helper.h"
+#include "ui.h"
+#include "status.h"
 
 void UI_DisplayStatus()
 {

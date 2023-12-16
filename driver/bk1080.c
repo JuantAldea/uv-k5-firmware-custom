@@ -16,14 +16,11 @@
 
 #include "bsp/dp32g030/gpio.h"
 #include "bk1080.h"
-#include "driver/gpio.h"
-#include "driver/i2c.h"
-#include "driver/system.h"
-#include "misc.h"
+#include "gpio.h"
+#include "i2c.h"
+#include "system.h"
+#include "../misc.h"
 
-#ifndef ARRAY_SIZE
-	#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
-#endif
 
 static const uint16_t BK1080_RegisterTable[] =
 {
