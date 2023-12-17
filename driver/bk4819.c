@@ -663,6 +663,12 @@ void BK4819_SetFilterBandwidth(const BK4819_FilterBandwidth_t Bandwidth, const b
 	BK4819_WriteRegister(BK4819_REG_43, val);
 }
 
+void BK4819_SetupDeviation(const uint16_t dev)
+{
+	uint16_t hw_dev = ((dev > 0 ? 1 : 0) << 12) | (dev << 0);;
+	BK4819_WriteRegister(BK4819_REG_40, hw_dev);
+}
+
 void BK4819_SetupPowerAmplifier(const uint8_t bias, const uint32_t frequency)
 {
 	// REG_36 <15:8> 0 PA Bias output 0 ~ 3.2V

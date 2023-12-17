@@ -199,7 +199,15 @@ int MENU_GetLimits(uint8_t menu_id, int32_t *pMin, int32_t *pMax)
 			*pMin = 0;
 			*pMax = ARRAY_SIZE(CTCSS_Options);
 			break;
-
+			
+#ifdef ENABLE_DEVIATION
+		case MENU_DEV_FM:
+		case MENU_DEV_AM:
+		case MENU_DEV_SSB:
+			*pMin = 0;
+			*pMax = 45;
+			break;
+#endif
 		case MENU_W_N:
 			*pMin = 0;
 			*pMax = ARRAY_SIZE(gSubMenu_W_N) - 1;
@@ -451,6 +459,17 @@ void MENU_AcceptSetting(void)
 			gRequestSaveChannel = 1;
 			return;
 		}
+#ifdef ENABLE_DEVIATION
+		case MENU_DEV_FM:
+			gTxVfo->DeviationFM = gSubMenuSelection;
+			return;
+		case MENU_DEV_AM:
+			gTxVfo->DeviationAM = gSubMenuSelection;
+			return;
+		case MENU_DEV_SSB:
+			gTxVfo->DeviationSSB = gSubMenuSelection;
+			return;
+#endif
 		case MENU_SFT_D:
 			gTxVfo->TX_OFFSET_FREQUENCY_DIRECTION = gSubMenuSelection;
 			gRequestSaveChannel                   = 1;
@@ -887,7 +906,17 @@ void MENU_ShowCurrentSetting(void)
 		case MENU_T_CTCS:
 			gSubMenuSelection = (gTxVfo->freq_config_TX.CodeType == CODE_TYPE_CONTINUOUS_TONE) ? gTxVfo->freq_config_TX.Code + 1 : 0;
 			break;
-
+#ifdef ENABLE_DEVIATION
+		case MENU_DEV_FM:
+			gSubMenuSelection = gTxVfo->DeviationFM;
+			break;
+		case MENU_DEV_AM:
+			gSubMenuSelection = gTxVfo->DeviationAM;
+			break;
+		case MENU_DEV_SSB:
+			gSubMenuSelection = gTxVfo->DeviationSSB;
+			break;
+#endif
 		case MENU_SFT_D:
 			gSubMenuSelection = gTxVfo->TX_OFFSET_FREQUENCY_DIRECTION;
 			break;

@@ -246,7 +246,11 @@ void RADIO_ConfigureChannel(const unsigned int VFO, const unsigned int configure
 
 		pVfo->freq_config_RX.CodeType = (data[2] >> 0) & 0x0F;
 		pVfo->freq_config_TX.CodeType = (data[2] >> 4) & 0x0F;
-
+#ifdef ENABLE_DEVIATION
+		pVfo->DeviationFM = 13;
+		pVfo->DeviationAM = 14;
+		pVfo->DeviationSSB = 8;
+#endif
 		tmp = data[0];
 		switch (pVfo->freq_config_RX.CodeType)
 		{
@@ -829,7 +833,7 @@ void RADIO_SetTxParameters(void)
 	BK4819_SetFrequency(gCurrentVfo->pTX->Frequency);
 
 	// TX compressor
-	BK4819_SetCompander((gRxVfo->Modulation == MODULATION_FM && (gRxVfo->Compander == 1 || gRxVfo->Compander >= 3)) ? gRxVfo->Compander : 0);
+	BK4819_SetCompander(gRxVfo->Compander == 1 || gRxVfo->Compander >= 3/*))*/ ? gRxVfo->Compander : 0);
 
 	BK4819_PrepareTransmit();
 
@@ -845,22 +849,39 @@ void RADIO_SetTxParameters(void)
 
 	SYSTEM_DelayMs(10);
 
-	switch (gCurrentVfo->pTX->CodeType)
-	{
-		default:
-		case CODE_TYPE_OFF:
-			BK4819_ExitSubAu();
-			break;
+	if (gCurrentVfo->Modulation == MODULATION_FM) {
+		switch (gCurrentVfo->pTX->CodeType)
+		{
+			default:
+			case CODE_TYPE_OFF:
+				BK4819_ExitSubAu();
+				break;
 
-		case CODE_TYPE_CONTINUOUS_TONE:
-			BK4819_SetCTCSSFrequency(CTCSS_Options[gCurrentVfo->pTX->Code]);
-			break;
+			case CODE_TYPE_CONTINUOUS_TONE:
+				BK4819_SetCTCSSFrequency(CTCSS_Options[gCurrentVfo->pTX->Code]);
+				break;
 
-		case CODE_TYPE_DIGITAL:
-		case CODE_TYPE_REVERSE_DIGITAL:
-			BK4819_SetCDCSSCodeWord(DCS_GetGolayCodeWord(gCurrentVfo->pTX->CodeType, gCurrentVfo->pTX->Code));
-			break;
+			case CODE_TYPE_DIGITAL:
+			case CODE_TYPE_REVERSE_DIGITAL:
+				BK4819_SetCDCSSCodeWord(DCS_GetGolayCodeWord(gCurrentVfo->pTX->CodeType, gCurrentVfo->pTX->Code));
+				break;
+		}
 	}
+	else {
+		BK4819_ExitSubAu();
+	}
+#ifdef ENABLE_DEVIATION
+	if (gCurrentVfo->Modulation == MODULATION_USB) {
+		BK4819_SetupDeviation(gCurrentVfo->DeviationSSB * 0x5B);
+	}
+	else if (gCurrentVfo->Modulation == MODULATION_AM) {
+		BK4819_SetupDeviation(gCurrentVfo->DeviationAM * 0x5B);
+	}
+	else {
+		BK4819_SetupDeviation(gCurrentVfo->DeviationFM * 0x5B);
+	}
+#endif
+	SYSTEM_DelayMs(10);
 }
 
 void RADIO_SetModulation(ModulationMode_t modulation)

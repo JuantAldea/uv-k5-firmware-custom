@@ -46,6 +46,11 @@ const t_menu_item MenuList[] =
 	{"RxCTCS", VOICE_ID_CTCSS,                         MENU_R_CTCS        }, // was "R_CTCS"
 	{"TxDCS",  VOICE_ID_DCS,                           MENU_T_DCS         }, // was "T_DCS"
 	{"TxCTCS", VOICE_ID_CTCSS,                         MENU_T_CTCS        }, // was "T_CTCS"
+#ifdef ENABLE_DEVIATION
+	{"DevFM",  VOICE_ID_INVALID,                       MENU_DEV_FM        },
+	{"DevAM",  VOICE_ID_INVALID,                       MENU_DEV_AM        },
+	{"DevSSB", VOICE_ID_INVALID,                       MENU_DEV_SSB       },
+#endif
 	{"TxODir", VOICE_ID_TX_OFFSET_FREQUENCY_DIRECTION, MENU_SFT_D         }, // was "SFT_D"
 	{"TxOffs", VOICE_ID_TX_OFFSET_FREQUENCY,           MENU_OFFSET        }, // was "OFFSET"
 	{"W/N",    VOICE_ID_CHANNEL_BANDWIDTH,             MENU_W_N           },
@@ -541,7 +546,18 @@ void UI_DisplayMenu(void)
 				sprintf(String, "%u.%uHz", CTCSS_Options[gSubMenuSelection - 1] / 10, CTCSS_Options[gSubMenuSelection - 1] % 10);
 			break;
 		}
-
+#ifdef ENABLE_DEVIATION
+		case MENU_DEV_FM:
+		case MENU_DEV_AM:
+		case MENU_DEV_SSB:
+		{
+			if (gSubMenuSelection == 0)
+				strcpy(String, "OFF");
+			else
+				sprintf(String, "%d", gSubMenuSelection);
+			break;	
+		}
+#endif
 		case MENU_SFT_D:
 			strcpy(String, gSubMenu_SFT_D[gSubMenuSelection]);
 			break;
