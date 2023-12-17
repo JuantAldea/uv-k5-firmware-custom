@@ -27,6 +27,121 @@
 
 	.global SystickHandler
 	.weak SystickHandler
+	
+	.weak HandlerNMI
+	.global HandlerNMI
+
+	.weak HandlerHardFault
+	.global HandlerHardFault
+
+	.weak HandlerSVCall
+	.global HandlerSVCall
+
+	.weak HandlerPendSV
+	.global HandlerPendSV
+
+	.weak SystickHandler
+	.global SystickHandler
+
+	.weak HandlerWWDT
+	.global HandlerWWDT
+
+	.weak HandlerIWDT
+	.global HandlerIWDT
+	
+	.weak HandlerRTC
+	.global HandlerRTC
+
+	.weak HandlerDMA
+	.global HandlerDMA
+
+	.weak HandlerSARADC
+	.global HandlerSARADC
+
+	.weak HandlerTIMER_BASE0
+	.global HandlerTIMER_BASE0
+
+	.weak HandlerTIMER_BASE1
+	.global HandlerTIMER_BASE1
+
+	.weak HandlerTIMER_PLUS0
+	.global HandlerTIMER_PLUS0
+
+	.weak HandlerTIMER_PLUS1
+	.global HandlerTIMER_PLUS1
+
+	.weak HandlerPWM_BASE0
+	.global HandlerPWM_BASE0
+
+	.weak HandlerPWM_BASE1
+	.global HandlerPWM_BASE1
+
+	.weak HandlerPWM_PLUS0
+	.global HandlerPWM_PLUS0
+
+	.weak HandlerPWM_PLUS1
+	.global HandlerPWM_PLUS1
+
+	.weak HandlerUART0
+	.global HandlerUART0
+
+	.weak HandlerUART1
+	.global HandlerUART1
+
+	.weak HandlerUART2
+	.global HandlerUART2
+
+	.weak HandlerSPI0
+	.global HandlerSPI0
+
+	.weak HandlerSPI1
+	.global HandlerSPI1
+
+	.weak HandlerIIC0
+	.global HandlerIIC0
+
+	.weak HandlerIIC1
+	.global HandlerIIC1
+
+	.weak HandlerCMP
+	.global HandlerCMP
+
+	.weak HandlerTIMER_BASE2
+	.global HandlerTIMER_BASE2
+
+	.weak HandlerGPIOA5
+	.global HandlerGPIOA5
+
+	.weak HandlerGPIOA6
+	.global HandlerGPIOA6
+
+	.weak HandlerGPIOA7
+	.global HandlerGPIOA7
+
+	.weak HandlerGPIOB0
+	.global HandlerGPIOB0
+
+	.weak HandlerGPIOB1
+	.global HandlerGPIOB1
+
+	.weak HandlerGPIOC0
+	.global HandlerGPIOC0
+
+	.weak HandlerGPIOC1
+	.global HandlerGPIOC1
+
+	.weak HandlerGPIOA
+	.global HandlerGPIOA
+
+	.weak HandlerGPIOB
+	.global HandlerGPIOB
+
+	.weak HandlerGPIOC
+	.global HandlerGPIOC
+
+	.weak HandlerReset
+	.global HandlerReset
+
 
 	.section .text.isr
 
@@ -250,4 +365,3 @@ HandlerReset:
 #endif
 	bl	Main
 	b 	.
-

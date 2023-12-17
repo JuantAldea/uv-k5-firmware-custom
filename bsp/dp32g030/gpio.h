@@ -40,7 +40,14 @@
 
 typedef struct {
 	uint32_t DATA;
-	uint32_t DIR;
+    uint32_t DIR;
+    uint32_t INTLVLTRG;
+    uint32_t INTBE;
+    uint32_t INTRISEEN;
+    uint32_t INTEN;
+    uint32_t INTRAWSTAT;
+    uint32_t INTSTAT;
+    uint32_t INTCLR;
 } GPIO_Bank_t;
 
 #define GPIO_DIR_0_SHIFT          0
@@ -173,4 +180,3 @@ typedef struct {
 
 
 #endif
-

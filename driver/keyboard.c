@@ -15,12 +15,18 @@
  *     limitations under the License.
  */
 
-#include "bsp/dp32g030/gpio.h"
+#include "ARMCM0.h"
+#include "driver/bk4819.h"
 #include "gpio.h"
 #include "keyboard.h"
 #include "systick.h"
 #include "i2c.h"
+
+#include "../app/flashlight.h"
+#include "../bsp/dp32g030/gpio.h"
+#include "../bsp/dp32g030/irq.h"
 #include "../misc.h"
+#include "../external/printf/printf.h"
 
 KEY_Code_t gKeyReading0     = KEY_INVALID;
 KEY_Code_t gKeyReading1     = KEY_INVALID;
@@ -126,7 +132,7 @@ KEY_Code_t KEYBOARD_Poll(void)
 
 		if (i < 3)
 			break;	// noise is too bad
-
+		printf("REG: %x\n", reg);
 		for (unsigned int i = 0; i < ARRAY_SIZE(keyboard[j].pins); i++)
 		{
 			const uint16_t mask = 1u << keyboard[j].pins[i].pin;
@@ -150,4 +156,31 @@ KEY_Code_t KEYBOARD_Poll(void)
 	GPIO_SetBit(  &GPIOA->DATA, GPIOA_PIN_KEYBOARD_7);
 
 	return Key;
+}
+
+void KEYBOARD_Init()
+{
+	/*
+		INTLVLTRG = 0 (edge)
+		INTBE = 0 (single edge)
+		INTRISEEN = 1 << line  (1 rising 0 falling)
+		INTEN = 1 << line (1 enable interrupt)
+		INTCLT = 1 << line (write 1 to clear clear)
+	*/
+
+	GPIOA->INTLVLTRG = 0;
+	GPIOA->INTBE = 0;
+	GPIOA->INTRISEEN = 0;
+	GPIOA->INTEN = 0xffff;
+	GPIOA->INTCLR = 0xffff;
+	NVIC_EnableIRQ((IRQn_Type)DP32_GPIOA_IRQn);
+}
+
+void HandlerGPIOA(void)
+{
+	// just clear interrupts, for now. We just want them for waking up from __WFI()
+	static bool toggle = false;
+	toggle = !toggle;
+	BK4819_ToggleGpioOut(BK4819_GPIO6_PIN2_GREEN, toggle);
+	GPIOA->INTCLR = 0xffff;
 }

@@ -16,8 +16,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <stdio.h>     // NULL
-
+#include "external/printf/printf.h"
 #include "ARMCM0.h"
 
 #ifdef ENABLE_AM_FIX
@@ -60,6 +59,8 @@ void _putchar(__attribute__((unused)) char c)
 
 }
 
+void Main(void) __attribute__((noreturn));
+
 void Main(void)
 {
 	// Enable clock gating of blocks we need
@@ -90,7 +91,7 @@ void Main(void)
 	gDTMF_String[sizeof(gDTMF_String) - 1] = 0;
 
 	BK4819_Init();
-
+	
 	BOARD_ADC_GetBatteryInfo(&gBatteryCurrentVoltage, &gBatteryCurrent);
 
 	SETTINGS_InitEEPROM();
@@ -219,6 +220,8 @@ void Main(void)
 		RADIO_ConfigureNOAA();
 #endif
 	}
+	
+	KEYBOARD_Init();
 
 	while (true) {
 		APP_Update();
@@ -232,6 +235,7 @@ void Main(void)
 		 * Should save quite a bit of battery, I guess.
 		*/
 		__WFI();
+		printf("L\n");
 
 		if (gNextTimeslice) {
 
