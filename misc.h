@@ -325,6 +325,8 @@ extern volatile uint8_t      gVFOStateResumeCountdown_500ms;
 extern uint8_t               gIsLocked;
 extern volatile uint8_t      boot_counter_10ms;
 
+extern volatile uint32_t gGlobalSysTickCounter;
+
 int32_t NUMBER_AddWithWraparound(int32_t Base, int32_t Add, int32_t LowerLimit, int32_t UpperLimit);
 unsigned long StrToUL(const char * str);
 

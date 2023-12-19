@@ -45,10 +45,11 @@ void SYSTICK_DelayUs(uint32_t Delay)
 		elapsed_ticks += Delta + Previous;
 
 		Previous = Current;
-
+/*
 		if (((int32_t)(ticks - elapsed_ticks)) >= 48 * 10000) {
+			__DSB();
 			__WFI();
 		}
-
+*/
 	} while (elapsed_ticks < ticks);
 }

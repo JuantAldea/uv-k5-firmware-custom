@@ -132,7 +132,7 @@ KEY_Code_t KEYBOARD_Poll(void)
 
 		if (i < 3)
 			break;	// noise is too bad
-		printf("REG: %x\n", reg);
+
 		for (unsigned int i = 0; i < ARRAY_SIZE(keyboard[j].pins); i++)
 		{
 			const uint16_t mask = 1u << keyboard[j].pins[i].pin;
@@ -170,10 +170,12 @@ void KEYBOARD_Init()
 
 	GPIOA->INTLVLTRG = 0;
 	GPIOA->INTBE = 0;
-	GPIOA->INTRISEEN = 0;
-	GPIOA->INTEN = 0xffff;
+	GPIOA->INTRISEEN = 0xffff;
+	GPIOA->INTEN  = 0xffff;
 	GPIOA->INTCLR = 0xffff;
+	NVIC_SetPriority((IRQn_Type) DP32_GPIOA_IRQn, 0);
 	NVIC_EnableIRQ((IRQn_Type)DP32_GPIOA_IRQn);
+	
 }
 
 void HandlerGPIOA(void)

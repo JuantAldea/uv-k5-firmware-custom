@@ -76,6 +76,7 @@ void Main(void)
 		| SYSCON_DEV_CLK_GATE_PWM_PLUS0_BITS_ENABLE;
 
 	SYSTICK_Init();
+	KEYBOARD_Init();
 	BOARD_Init();
 
 	boot_counter_10ms = 250;   // 2.5 sec
@@ -91,7 +92,7 @@ void Main(void)
 	gDTMF_String[sizeof(gDTMF_String) - 1] = 0;
 
 	BK4819_Init();
-	
+
 	BOARD_ADC_GetBatteryInfo(&gBatteryCurrentVoltage, &gBatteryCurrent);
 
 	SETTINGS_InitEEPROM();
@@ -220,7 +221,7 @@ void Main(void)
 		RADIO_ConfigureNOAA();
 #endif
 	}
-	
+
 	KEYBOARD_Init();
 
 	while (true) {
@@ -234,8 +235,9 @@ void Main(void)
 		 * Longest-case-scenario: we are woken up by SysTick, and this loop runs at 10Mhz.
 		 * Should save quite a bit of battery, I guess.
 		*/
+		__DSB();
 		__WFI();
-		printf("L\n");
+		printf("%d\n", gGlobalSysTickCounter);
 
 		if (gNextTimeslice) {
 
