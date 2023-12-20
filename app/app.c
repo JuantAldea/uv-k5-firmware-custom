@@ -705,13 +705,13 @@ static void CheckRadioInterrupts(void)
 		if (interrupt_status_bits & BK4819_REG_02_SQUELCH_LOST)
 		{
 			g_SquelchLost = true;
-			BK4819_ToggleGpioOut(BK4819_GPIO6_PIN2_GREEN, true);
+			//BK4819_ToggleGpioOut(BK4819_GPIO6_PIN2_GREEN, true);
 		}
 
 		if (interrupt_status_bits & BK4819_REG_02_SQUELCH_FOUND)
 		{
 			g_SquelchLost = false;
-			BK4819_ToggleGpioOut(BK4819_GPIO6_PIN2_GREEN, false);
+			//BK4819_ToggleGpioOut(BK4819_GPIO6_PIN2_GREEN, false);
 		}
 
 #ifdef ENABLE_AIRCOPY

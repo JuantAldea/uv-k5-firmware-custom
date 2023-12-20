@@ -16,7 +16,7 @@
  */
 
 #include "ARMCM0.h"
-#include "driver/bk4819.h"
+#include "bk4819.h"
 #include "gpio.h"
 #include "keyboard.h"
 #include "systick.h"
@@ -25,6 +25,8 @@
 #include "../app/flashlight.h"
 #include "../bsp/dp32g030/gpio.h"
 #include "../bsp/dp32g030/irq.h"
+#include "../bsp/dp32g030/portcon.h"
+#include "../bsp/dp32g030/pmu.h"
 #include "../misc.h"
 #include "../external/printf/printf.h"
 
@@ -61,7 +63,7 @@ static const struct {
 		}
 	},
 	{	// First row
-		.set_to_zero_mask = ~(1u << GPIOA_PIN_KEYBOARD_4) & 0xffff,
+		.set_to_zero_mask = ~(1U << GPIOA_PIN_KEYBOARD_4) & 0xffff,
 		.pins = {
 			{ .key = KEY_MENU,  .pin = GPIOA_PIN_KEYBOARD_0},
 			{ .key = KEY_1,     .pin = GPIOA_PIN_KEYBOARD_1},
@@ -70,7 +72,7 @@ static const struct {
 		}
 	},
 	{	// Second row
-		.set_to_zero_mask = ~(1u << GPIOA_PIN_KEYBOARD_5) & 0xffff,
+		.set_to_zero_mask = ~(1U << GPIOA_PIN_KEYBOARD_5) & 0xffff,
 		.pins = {
 			{ .key = KEY_UP,    .pin = GPIOA_PIN_KEYBOARD_0},
 			{ .key = KEY_2 ,    .pin = GPIOA_PIN_KEYBOARD_1},
@@ -79,7 +81,7 @@ static const struct {
 		}
 	},
 	{	// Third row
-		.set_to_zero_mask = ~(1u << GPIOA_PIN_KEYBOARD_6) & 0xffff,
+		.set_to_zero_mask = ~(1U << GPIOA_PIN_KEYBOARD_6) & 0xffff,
 		.pins = {
 			{ .key = KEY_DOWN,  .pin = GPIOA_PIN_KEYBOARD_0},
 			{ .key = KEY_3   ,  .pin = GPIOA_PIN_KEYBOARD_1},
@@ -88,7 +90,7 @@ static const struct {
 		}
 	},
 	{	// Fourth row
-		.set_to_zero_mask = ~(1u << GPIOA_PIN_KEYBOARD_7) & 0xffff,
+		.set_to_zero_mask = ~(1U << GPIOA_PIN_KEYBOARD_7) & 0xffff,
 		.pins = {
 			{ .key = KEY_EXIT,  .pin = GPIOA_PIN_KEYBOARD_0},
 			{ .key = KEY_STAR,  .pin = GPIOA_PIN_KEYBOARD_1},
@@ -114,10 +116,10 @@ KEY_Code_t KEYBOARD_Poll(void)
 		unsigned int k;
 
 		// Set all high
-		GPIOA->DATA |=  1u << GPIOA_PIN_KEYBOARD_4 |
-						1u << GPIOA_PIN_KEYBOARD_5 |
-						1u << GPIOA_PIN_KEYBOARD_6 |
-						1u << GPIOA_PIN_KEYBOARD_7;
+		GPIOA->DATA |=  1U << GPIOA_PIN_KEYBOARD_4 |
+						1U << GPIOA_PIN_KEYBOARD_5 |
+						1U << GPIOA_PIN_KEYBOARD_6 |
+						1U << GPIOA_PIN_KEYBOARD_7;
 
 		// Clear the pin we are selecting
 		GPIOA->DATA &= keyboard[j].set_to_zero_mask;
@@ -135,7 +137,7 @@ KEY_Code_t KEYBOARD_Poll(void)
 
 		for (unsigned int i = 0; i < ARRAY_SIZE(keyboard[j].pins); i++)
 		{
-			const uint16_t mask = 1u << keyboard[j].pins[i].pin;
+			const uint16_t mask = 1U << keyboard[j].pins[i].pin;
 			if (!(reg & mask))
 			{
 				Key = keyboard[j].pins[i].key;
@@ -157,7 +159,6 @@ KEY_Code_t KEYBOARD_Poll(void)
 
 	return Key;
 }
-
 void KEYBOARD_Init()
 {
 	/*
@@ -173,11 +174,17 @@ void KEYBOARD_Init()
 	GPIOA->INTRISEEN = 0xffff;
 	GPIOA->INTEN  = 0xffff;
 	GPIOA->INTCLR = 0xffff;
+	//GPIOA->INTEN = GPIOA_PIN_KEYBOARD_4 | GPIOA_PIN_KEYBOARD_5 | GPIOA_PIN_KEYBOARD_6 | GPIOA_PIN_KEYBOARD_7;
+	PORTCON_PORTA_WKE |= 0xffff;
+	PORTCON_PORTA_WK_SEL |= 0xffff;
+	PMU_LPMD_WKEN |= PMU_LPMD_IO_WKEN_BITS_ENABLE;
+	PMU_LPMD_WKST |= PMU_LPMD_WKST_IO_WKST_VALUE_ENABLE;
 	NVIC_SetPriority((IRQn_Type) DP32_GPIOA_IRQn, 0);
 	NVIC_EnableIRQ((IRQn_Type)DP32_GPIOA_IRQn);
-	
+
 }
 
+/*
 void HandlerGPIOA(void)
 {
 	// just clear interrupts, for now. We just want them for waking up from __WFI()
@@ -185,4 +192,4 @@ void HandlerGPIOA(void)
 	toggle = !toggle;
 	BK4819_ToggleGpioOut(BK4819_GPIO6_PIN2_GREEN, toggle);
 	GPIOA->INTCLR = 0xffff;
-}
+}*/

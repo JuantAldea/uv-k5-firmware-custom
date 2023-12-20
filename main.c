@@ -14,6 +14,7 @@
  *     limitations under the License.
  */
 
+#include "bsp/dp32g030/pmu.h"
 #include <stdint.h>
 #include <string.h>
 #include "external/printf/printf.h"
@@ -59,7 +60,14 @@ void _putchar(__attribute__((unused)) char c)
 
 }
 
+void HandlerGPIOA(void)
+{
+	APP_Update();
+	GPIOA->INTCLR = 0xffff;
+}
+
 void Main(void) __attribute__((noreturn));
+
 
 void Main(void)
 {
@@ -225,8 +233,6 @@ void Main(void)
 	KEYBOARD_Init();
 
 	while (true) {
-		APP_Update();
-
 		/*
 		 * Do not spin mindlessly. Wait until the next interrupt is raised.
 		 * Could be SysTick, then gNextTimeslice would be true, or maybe there's
@@ -237,8 +243,9 @@ void Main(void)
 		*/
 		__DSB();
 		__WFI();
-		printf("%d\n", gGlobalSysTickCounter);
 
+		printf("%d\n", gGlobalSysTickCounter);
+		//PMU_LPOW_MD |= PMU_LPOW_MD_SLEEP_VALUE_ENABLE;
 		if (gNextTimeslice) {
 
 			APP_TimeSlice10ms();
@@ -246,6 +253,8 @@ void Main(void)
 			if (gNextTimeslice_500ms) {
 				APP_TimeSlice500ms();
 			}
+
+			APP_Update();
 		}
 	}
 }

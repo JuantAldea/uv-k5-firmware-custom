@@ -39,7 +39,7 @@
 /* -------- GPIO -------- */
 
 typedef struct {
-	uint32_t DATA;
+    uint32_t DATA;
     uint32_t DIR;
     uint32_t INTLVLTRG;
     uint32_t INTBE;
