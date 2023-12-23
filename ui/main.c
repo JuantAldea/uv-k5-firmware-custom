@@ -772,8 +772,7 @@ void UI_DisplayMain(void)
 
 					center_line = CENTER_LINE_DTMF_DEC;
 
-					strcpy(String, "DTMF ");
-					strcat(String, gDTMF_RX_live + idx);
+					sprintf(String, "DTMF %s", gDTMF_RX_live + idx);
 					UI_PrintStringSmall(String, 2, 0, 3);
 				}
 			#else
@@ -788,8 +787,7 @@ void UI_DisplayMain(void)
 
 					center_line = CENTER_LINE_DTMF_DEC;
 
-					strcpy(String, "DTMF ");
-					strcat(String, gDTMF_RX + idx);
+					sprintf(String, "DTMF %s", gDTMF_RX_live + idx);
 					UI_PrintStringSmall(String, 2, 0, 3);
 				}
 			#endif

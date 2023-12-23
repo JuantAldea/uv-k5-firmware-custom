@@ -331,13 +331,12 @@ void DTMF_HandleRequest(void)
 
 	if (gDTMF_RX_index >= 2)
 	{	// look for ACK reply
+		char *pPrintStr = "AB";
 
-		strcpy(String, "AB");
+		Offset = gDTMF_RX_index - strlen(pPrintStr);
 
-		Offset = gDTMF_RX_index - strlen(String);
-
-		if (CompareMessage(gDTMF_RX + Offset, String, strlen(String), true))
-		{	// ends with "AB"
+		if (CompareMessage(gDTMF_RX + Offset, pPrintStr, strlen(pPrintStr), true)) {
+			// ends with "AB"
 
 			if (gDTMF_ReplyState != DTMF_REPLY_NONE)          // 1of11
 //			if (gDTMF_CallState != DTMF_CALL_STATE_NONE)      // 1of11
