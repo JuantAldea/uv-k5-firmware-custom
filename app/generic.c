@@ -172,12 +172,6 @@ void GENERIC_Key_PTT(bool bKeyPressed)
 			gDTMF_InputBox_Index = gDTMF_PreviousIndex;
 		}
 
-		gDTMF_PreviousIndex = gDTMF_InputBox_Index;
-		strcpy(gDTMF_String, gDTMF_InputBox);
-		gDTMF_ReplyState = DTMF_REPLY_ANI;
-		gDTMF_State = DTMF_STATE_0;
-
-
 #ifdef ENABLE_DTMF_CALLING
 		// append our DTMF ID to the inputted DTMF code
 		//  IF the user inputted code is exactly 3 digits long and D-DCD is enabled
@@ -188,11 +182,10 @@ void GENERIC_Key_PTT(bool bKeyPressed)
 		}
 #endif
 		// remember the DTMF string
-
-
-
-
-
+		gDTMF_PreviousIndex = gDTMF_InputBox_Index;
+		strcpy(gDTMF_String, gDTMF_InputBox);
+		gDTMF_ReplyState = DTMF_REPLY_ANI;
+		gDTMF_State = DTMF_STATE_0;
 	}
 
 	DTMF_clear_input_box();
