@@ -404,7 +404,7 @@ void UI_DisplayMenu(void)
 
 	UI_DisplayClear();
 
-	#if 0
+	#ifdef ENABLE_ORIGINAL_MENU_LAYOUT
 		// original menu layout
 
 		for (i = 0; i < 3; i++)
