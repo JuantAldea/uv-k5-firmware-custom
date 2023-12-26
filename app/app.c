@@ -706,6 +706,9 @@ void APP_EndTransmission(bool inmediately)
 {
 	RADIO_SendEndOfTransmission();
 
+	gUpdateStatus = true;
+	gUpdateDisplay = true;
+
 	if (gMonitor) {
 		 //turn the monitor back on
 		gFlagReconfigureVfos = true;
@@ -757,8 +760,6 @@ static void HandleVox(void)
 
 		if (gCurrentFunction == FUNCTION_TRANSMIT && !gPttIsPressed && !gVOX_NoiseDetected) {
 			APP_EndTransmission(false);
-			gUpdateStatus = true;
-			gUpdateDisplay = true;
 		}
 		return;
 	}
