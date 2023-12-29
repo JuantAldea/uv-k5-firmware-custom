@@ -971,6 +971,20 @@ void APP_Update(void)
 	}
 }
 
+bool DebounceRead(uint8_t ReadValue, uint8_t *pDebounceCounter, uint8_t TargetValue, uint16_t TargetCount)
+{
+	if (++*pDebounceCounter < TargetCount) {
+		if (ReadValue != TargetValue) {
+			*pDebounceCounter = 0;
+		}
+		return false;
+	}
+
+	*pDebounceCounter = 0;
+	return true;
+}
+
+
 // called every 10ms
 static void CheckKeys(void)
 {
@@ -987,33 +1001,19 @@ static void CheckKeys(void)
 #endif
 
 // -------------------- PTT ------------------------
-	if (gPttIsPressed)
-	{
-		if (GPIO_CheckBit(&GPIOC->DATA, GPIOC_PIN_PTT) || SerialConfigInProgress())
-		{	// PTT released or serial comms config in progress
-			if (++gPttDebounceCounter >= 3 || SerialConfigInProgress())	    // 30ms
-			{	// stop transmitting
-				gPttDebounceCounter = 0;
-				ProcessKey(KEY_PTT, false, false);
-				if (gKeyReading1 != KEY_INVALID) {
-					gPttWasReleased = true;
-				}
+	const uint8_t PttPinHigh = !!GPIO_CheckBit(&GPIOC->DATA, GPIOC_PIN_PTT);
+	if (gPttIsPressed) {
+		if (DebounceRead(PttPinHigh, &gPttDebounceCounter, true, 3) || SerialConfigInProgress()) {
+			ProcessKey(KEY_PTT, false, false);
+			if (gKeyReading1 != KEY_INVALID) {
+				gPttWasReleased = true;
 			}
 		}
-		else
-			gPttDebounceCounter = 0;
+	} else if (DebounceRead(PttPinHigh, &gPttDebounceCounter, false, 3) && !SerialConfigInProgress()) {
+		// PTT pressed
+		boot_counter_10ms   = 0;
+		ProcessKey(KEY_PTT, true, false);
 	}
-	else if (!GPIO_CheckBit(&GPIOC->DATA, GPIOC_PIN_PTT) && !SerialConfigInProgress())
-	{	// PTT pressed
-		if (++gPttDebounceCounter >= 3)	    // 30ms
-		{	// start transmitting
-			boot_counter_10ms   = 0;
-			gPttDebounceCounter = 0;
-			ProcessKey(KEY_PTT, true, false);
-		}
-	}
-	else
-		gPttDebounceCounter = 0;
 
 // --------------------- OTHER KEYS ----------------------------
 
@@ -1056,31 +1056,35 @@ static void CheckKeys(void)
 		return;
 	}
 
-	if (gDebounceCounter < key_repeat_delay_10ms || Key == KEY_INVALID) // the button is not held long enough for repeat yet, or not really pressed
+	if (gDebounceCounter < key_repeat_delay_10ms || Key == KEY_INVALID) {
+	 	// the button is not held long enough for repeat yet, or not really pressed
 		return;
+	}
 
-	if (gDebounceCounter == key_repeat_delay_10ms) //initial key repeat with longer delay
-	{
-		if (Key != KEY_PTT)
-		{
+	//initial key repeat with longer delay
+	if (gDebounceCounter == key_repeat_delay_10ms) {
+		if (Key != KEY_PTT) {
 			gKeyBeingHeld = true;
 			ProcessKey(Key, true, true); // key held event
 		}
+		return;
 	}
-	else //subsequent fast key repeats
-	{
-		if (Key == KEY_UP || Key == KEY_DOWN) // fast key repeats for up/down buttons
-		{
-			gKeyBeingHeld = true;
-			if ((gDebounceCounter % key_repeat_10ms) == 0)
-				ProcessKey(Key, true, true); // key held event
+
+	//subsequent fast key repeats
+	if (Key == KEY_UP || Key == KEY_DOWN) {
+		// fast key repeats for up/down buttons
+		gKeyBeingHeld = true;
+		if (gDebounceCounter % key_repeat_10ms == 0) {
+			 // key held event
+			ProcessKey(Key, true, true);
 		}
-
-		if (gDebounceCounter < 0xFFFF)
-			return;
-
-		gDebounceCounter = key_repeat_delay_10ms+1;
 	}
+
+	if (gDebounceCounter < 0xFFFF) {
+		return;
+	}
+
+	gDebounceCounter = key_repeat_delay_10ms+1;
 }
 
 void APP_TimeSlice10ms(void)
