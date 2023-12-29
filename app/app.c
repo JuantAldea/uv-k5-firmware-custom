@@ -992,10 +992,11 @@ static void CheckKeys(void)
 		{	// PTT released or serial comms config in progress
 			if (++gPttDebounceCounter >= 3 || SerialConfigInProgress())	    // 30ms
 			{	// stop transmitting
+				gPttDebounceCounter = 0;
 				ProcessKey(KEY_PTT, false, false);
-				gPttIsPressed = false;
-				if (gKeyReading1 != KEY_INVALID)
+				if (gKeyReading1 != KEY_INVALID) {
 					gPttWasReleased = true;
+				}
 			}
 		}
 		else
@@ -1007,7 +1008,6 @@ static void CheckKeys(void)
 		{	// start transmitting
 			boot_counter_10ms   = 0;
 			gPttDebounceCounter = 0;
-			gPttIsPressed       = true;
 			ProcessKey(KEY_PTT, true, false);
 		}
 	}
@@ -1657,9 +1657,10 @@ static void ProcessKey(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 	if (Key == KEY_PTT) {
 		if (gPttWasPressed) {
 			bFlag = bKeyHeld;
-			if (!bKeyPressed) {
-				bFlag          = true;
-				gPttWasPressed = false;
+			gPttWasPressed = bKeyPressed;
+			if (!bKeyPressed)
+			{
+				bFlag = true;
 			}
 		}
 	}
