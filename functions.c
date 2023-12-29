@@ -15,8 +15,9 @@
  */
 
 #include <string.h>
-
-#include "app/dtmf.h"
+#ifdef ENABLE_DTMF
+	#include "app/dtmf.h"
+#endif
 #if defined(ENABLE_FMRADIO)
 	#include "app/fm.h"
 #endif
@@ -138,6 +139,7 @@ void FUNCTION_PowerSave() {
 
 void FUNCTION_Transmit()
 {
+#ifdef ENABLE_DTMF
 	// if DTMF is enabled when TX'ing, it changes the TX audio filtering !! .. 1of11
 	BK4819_DisableDTMF();
 
@@ -149,6 +151,7 @@ void FUNCTION_Transmit()
 	// clear the DTMF RX live decoder buffer
 	gDTMF_RX_live_timeout = 0;
 	memset(gDTMF_RX_live, 0, sizeof(gDTMF_RX_live));
+#endif
 
 #if defined(ENABLE_FMRADIO)
 	if (gFmRadioMode)
@@ -187,10 +190,13 @@ void FUNCTION_Transmit()
 	// turn the RED LED on
 	BK4819_ToggleGpioOut(BK4819_GPIO5_PIN1_RED, true);
 
+#ifdef ENABLE_DTMF
 	DTMF_Reply();
 
-	if (gCurrentVfo->DTMF_PTT_ID_TX_MODE == PTT_ID_APOLLO)
-		BK4819_PlaySingleTone(2525, 250, 0, gEeprom.DTMF_SIDE_TONE);
+	if (gCurrentVfo->DTMF_PTT_ID_TX_MODE == PTT_ID_APOLLO) {
+		BK4819_PlaySingleTone(2525, 250, 0, gEeprom.PLAY_SIDE_TONE);
+	}
+#endif
 
 #if defined(ENABLE_ALARM) || defined(ENABLE_TX1750)
 	if (gAlarmState != ALARM_STATE_OFF) {

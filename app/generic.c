@@ -159,7 +159,7 @@ void GENERIC_Key_PTT(bool bKeyPressed)
 	     // 1of11 .. don't close the menu
 		gRequestDisplayScreen = DISPLAY_MAIN;
 	}
-
+#ifdef ENABLE_DTMF
 	// im DTMF input and we have either a new or a previous string
 	if (!gDTMF_InputMode || (gDTMF_InputBox_Index == 0 && gDTMF_PreviousIndex == 0)) {
 		goto start_tx;
@@ -190,7 +190,9 @@ void GENERIC_Key_PTT(bool bKeyPressed)
 
 
 	DTMF_clear_input_box();
+#endif
 
+goto start_tx; // use label
 start_tx:
 	// request start TX
 	gFlagPrepareTX = true;

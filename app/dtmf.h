@@ -14,6 +14,8 @@
  *     limitations under the License.
  */
 
+#ifdef ENABLE_DTMF
+
 #ifndef DTMF_H
 #define DTMF_H
 
@@ -114,6 +116,8 @@ DTMF_CallMode_t DTMF_CheckGroupCall(const char *pMsg, const unsigned int size);
 bool DTMF_GetContact(const int Index, char *pContact);
 bool DTMF_FindContact(const char *pContact, char *pResult);
 void DTMF_HandleRequest(void);
+
+#endif
 
 #endif
 

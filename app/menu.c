@@ -630,7 +630,7 @@ void MENU_AcceptSetting(void)
 		#endif
 
 		case MENU_D_ST:
-			gEeprom.DTMF_SIDE_TONE = gSubMenuSelection;
+			gEeprom.PLAY_SIDE_TONE = gSubMenuSelection;
 			break;
 
 #ifdef ENABLE_DTMF_CALLING
@@ -662,7 +662,7 @@ void MENU_AcceptSetting(void)
 			gRequestSaveChannel = 1;
 			return;
 #endif
-
+#ifdef ENABLE_DTMF
 		case MENU_D_LIVE_DEC:
 			gSetting_live_DTMF_decoder = gSubMenuSelection;
 			gDTMF_RX_live_timeout = 0;
@@ -685,6 +685,7 @@ void MENU_AcceptSetting(void)
 				gRequestDisplayScreen = DISPLAY_INVALID;
 			}
 			return;
+#endif
 #endif
 		case MENU_PONMSG:
 			gEeprom.POWER_ON_DISPLAY_MODE = gSubMenuSelection;
@@ -1029,7 +1030,7 @@ void MENU_ShowCurrentSetting(void)
 		#endif
 
 		case MENU_D_ST:
-			gSubMenuSelection = gEeprom.DTMF_SIDE_TONE;
+			gSubMenuSelection = gEeprom.PLAY_SIDE_TONE;
 			break;
 
 #ifdef ENABLE_DTMF_CALLING
@@ -1052,7 +1053,7 @@ void MENU_ShowCurrentSetting(void)
 		case MENU_BAT_TXT:
 			gSubMenuSelection = gSetting_battery_text;
 			return;
-
+#ifdef ENABLE_DTMF
 #ifdef ENABLE_DTMF_CALLING
 		case MENU_D_DCD:
 			gSubMenuSelection = gTxVfo->DTMF_DECODING_ENABLE;
@@ -1065,7 +1066,7 @@ void MENU_ShowCurrentSetting(void)
 		case MENU_D_LIVE_DEC:
 			gSubMenuSelection = gSetting_live_DTMF_decoder;
 			break;
-
+#endif
 		case MENU_PONMSG:
 			gSubMenuSelection = gEeprom.POWER_ON_DISPLAY_MODE;
 			break;
