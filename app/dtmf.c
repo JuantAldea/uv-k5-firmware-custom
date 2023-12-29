@@ -14,6 +14,8 @@
  *     limitations under the License.
  */
 
+ #ifdef ENABLE_DTMF
+
 #include <string.h>
 #include <stdio.h>   // NULL
 
@@ -71,7 +73,7 @@ bool              gDTMF_IsGroupCall;
 void DTMF_SendEndOfTransmission(void)
 {
 	if (gCurrentVfo->DTMF_PTT_ID_TX_MODE == PTT_ID_APOLLO) {
-		BK4819_PlaySingleTone(2475, 250, 28, gEeprom.DTMF_SIDE_TONE);
+		BK4819_PlaySingleTone(2475, 250, 28, gEeprom.PLAY_SIDE_TONE);
 	}
 
 	if ((gCurrentVfo->DTMF_PTT_ID_TX_MODE == PTT_ID_TX_DOWN || gCurrentVfo->DTMF_PTT_ID_TX_MODE == PTT_ID_BOTH)
@@ -79,14 +81,14 @@ void DTMF_SendEndOfTransmission(void)
 		&& gDTMF_CallState == DTMF_CALL_STATE_NONE
 #endif
 	) {	// end-of-tx
-		if (gEeprom.DTMF_SIDE_TONE)
+		if (gEeprom.PLAY_SIDE_TONE)
 		{
 			AUDIO_AudioPathOn();
 			gEnableSpeaker = true;
 			SYSTEM_DelayMs(60);
 		}
 
-		BK4819_EnterDTMF_TX(gEeprom.DTMF_SIDE_TONE);
+		BK4819_EnterDTMF_TX(gEeprom.PLAY_SIDE_TONE);
 
 		BK4819_PlayDTMFString(
 				gEeprom.DTMF_DOWN_CODE,
@@ -230,7 +232,7 @@ void DTMF_Reply(void)
 
 	Delay = (gEeprom.DTMF_PRELOAD_TIME < 200) ? 200 : gEeprom.DTMF_PRELOAD_TIME;
 
-	if (gEeprom.DTMF_SIDE_TONE)
+	if (gEeprom.PLAY_SIDE_TONE)
 	{	// the user will also hear the transmitted tones
 		AUDIO_AudioPathOn();
 		gEnableSpeaker = true;
@@ -238,7 +240,7 @@ void DTMF_Reply(void)
 
 	SYSTEM_DelayMs(Delay);
 
-	BK4819_EnterDTMF_TX(gEeprom.DTMF_SIDE_TONE);
+	BK4819_EnterDTMF_TX(gEeprom.PLAY_SIDE_TONE);
 
 	BK4819_PlayDTMFString(
 		pString,
@@ -504,5 +506,7 @@ void DTMF_HandleRequest(void)
 		gDTMF_ReplyState = DTMF_REPLY_NONE;
 	}
 }
+
+#endif
 
 #endif

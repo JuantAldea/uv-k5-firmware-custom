@@ -495,18 +495,18 @@ static void MAIN_Key_EXIT(bool bKeyPressed, bool bKeyHeld)
 				gScanKeepResult = false;
 				CHFRSCANNER_Stop();
 
-				#ifdef ENABLE_VOICE
-					gAnotherVoiceID = VOICE_ID_SCANNING_STOP;
-				#endif
+#ifdef ENABLE_VOICE
+				gAnotherVoiceID = VOICE_ID_SCANNING_STOP;
+#endif
 			}
 
 			gRequestDisplayScreen = DISPLAY_MAIN;
 			return;
 		}
 
-		#ifdef ENABLE_FMRADIO
-			ACTION_FM();
-		#endif
+#ifdef ENABLE_FMRADIO
+		ACTION_FM();
+#endif
 
 		return;
 	}
@@ -514,14 +514,20 @@ static void MAIN_Key_EXIT(bool bKeyPressed, bool bKeyHeld)
 	if (bKeyHeld && bKeyPressed)
 	{	// exit key held down
 
-		if (gInputBoxIndex > 0 || gDTMF_InputBox_Index > 0 || gDTMF_InputMode)
-		{	// cancel key input mode (channel/frequency entry)
-			gDTMF_InputMode       = false;
-			gDTMF_InputBox_Index  = 0;
-			memset(gDTMF_String, 0, sizeof(gDTMF_String));
+		if (gInputBoxIndex > 0
+#ifdef ENABLE_DTMF
+		|| gDTMF_InputBox_Index > 0 || gDTMF_InputMode
+#endif
+		) {
+			// cancel key input mode (channel/frequency entry)
 			gInputBoxIndex        = 0;
 			gRequestDisplayScreen = DISPLAY_MAIN;
 			gBeepToPlay           = BEEP_1KHZ_60MS_OPTIONAL;
+#ifdef ENABLE_DTMF
+			gDTMF_InputMode       = false;
+			gDTMF_InputBox_Index  = 0;
+			memset(gDTMF_String, 0, sizeof(gDTMF_String));
+#endif
 		}
 	}
 }
@@ -558,8 +564,11 @@ static void MAIN_Key_MENU(const bool bKeyPressed, const bool bKeyHeld)
 		return;
 	}
 
-	if (!bKeyPressed && !gDTMF_InputMode)
-	{	// menu key released
+	if (!bKeyPressed
+#ifdef ENABLE_DTMF
+		&& !gDTMF_InputMode
+#endif
+	){	// menu key released
 		const bool bFlag = !gInputBoxIndex;
 		gInputBoxIndex   = 0;
 
@@ -615,6 +624,8 @@ static void MAIN_Key_STAR(bool bKeyPressed, bool bKeyHeld)
 
 	if (!gWasFKeyPressed) // pressed without the F-key
 	{
+
+#ifdef ENABLE_DTMF
 		if (gScanStateDir == SCAN_OFF
 #ifdef ENABLE_NOAA
 			&& !IS_NOAA_CHANNEL(gTxVfo->CHANNEL_SAVE)
@@ -632,8 +643,8 @@ static void MAIN_Key_STAR(bool bKeyPressed, bool bKeyHeld)
 			gKeyInputCountdown    = key_input_timeout_500ms;
 
 			gRequestDisplayScreen = DISPLAY_MAIN;
-		}
-		else
+		} else
+#endif
 			gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
 	}
 	else
@@ -760,15 +771,16 @@ static void MAIN_Key_UP_DOWN(bool bKeyPressed, bool bKeyHeld, int8_t Direction)
 
 void MAIN_ProcessKeys(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 {
-	#ifdef ENABLE_FMRADIO
+#ifdef ENABLE_FMRADIO
 		if (gFmRadioMode && Key != KEY_PTT && Key != KEY_EXIT)
 		{
 			if (!bKeyHeld && bKeyPressed)
 				gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
 			return;
 		}
-	#endif
+#endif
 
+#ifdef ENABLE_DTMF
 	if (gDTMF_InputMode && bKeyPressed && !bKeyHeld)
 	{
 		const char Character = DTMF_GetCharacter(Key);
@@ -782,6 +794,7 @@ void MAIN_ProcessKeys(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 			return;
 		}
 	}
+#endif
 
 	// TODO: ???
 //	if (Key > KEY_PTT)

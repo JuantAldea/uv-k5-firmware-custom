@@ -241,7 +241,7 @@ static void CMD_0514(const uint8_t *pBuffer)
 	#endif
 
 	gSerialConfigCountDown_500ms = 12; // 6 sec
-	
+
 	// turn the LCD backlight off
 	BACKLIGHT_TurnOff();
 
@@ -291,7 +291,7 @@ static void CMD_051D(const uint8_t *pBuffer)
 		return;
 
 	gSerialConfigCountDown_500ms = 12; // 6 sec
-	
+
 	bReloadEeprom = false;
 
 	#ifdef ENABLE_FMRADIO
@@ -388,7 +388,7 @@ static void CMD_052D(const uint8_t *pBuffer)
 		gTryCount = 3;
 		bIsLocked = true;
 	}
-	
+
 	gIsLocked            = bIsLocked;
 	Reply.Data.bIsLocked = bIsLocked;
 
@@ -397,7 +397,7 @@ static void CMD_052D(const uint8_t *pBuffer)
 
 // session init, sends back version info and state
 // timestamp is a session id really
-// this command also disables dual watch, crossband, 
+// this command also disables dual watch, crossband,
 // DTMF side tones, freq reverse, PTT ID, DTMF decoding, frequency offset
 // exits power save, sets main VFO to upper,
 static void CMD_052F(const uint8_t *pBuffer)
@@ -407,7 +407,7 @@ static void CMD_052F(const uint8_t *pBuffer)
 	gEeprom.DUAL_WATCH                               = DUAL_WATCH_OFF;
 	gEeprom.CROSS_BAND_RX_TX                         = CROSS_BAND_OFF;
 	gEeprom.RX_VFO                                   = 0;
-	gEeprom.DTMF_SIDE_TONE                           = false;
+	gEeprom.PLAY_SIDE_TONE                           = false;
 	gEeprom.VfoInfo[0].FrequencyReverse              = false;
 	gEeprom.VfoInfo[0].pRX                           = &gEeprom.VfoInfo[0].freq_config_RX;
 	gEeprom.VfoInfo[0].pTX                           = &gEeprom.VfoInfo[0].freq_config_TX;
@@ -559,7 +559,7 @@ bool UART_IsCommandAvailable(void)
 		for (i = 0; i < (Size + 2u); i++)
 			UART_Command.Buffer[i] ^= Obfuscation[i % 16];
 	}
-	
+
 	CRC = UART_Command.Buffer[Size] | (UART_Command.Buffer[Size + 1] << 8);
 
 	return (CRC_Calculate(UART_Command.Buffer, Size) != CRC) ? false : true;
@@ -572,37 +572,37 @@ void UART_HandleCommand(void)
 		case 0x0514:
 			CMD_0514(UART_Command.Buffer);
 			break;
-	
+
 		case 0x051B:
 			CMD_051B(UART_Command.Buffer);
 			break;
-	
+
 		case 0x051D:
 			CMD_051D(UART_Command.Buffer);
 			break;
-	
+
 		case 0x051F:	// Not implementing non-authentic command
 			break;
-	
+
 		case 0x0521:	// Not implementing non-authentic command
 			break;
-	
+
 		case 0x0527:
 			CMD_0527();
 			break;
-	
+
 		case 0x0529:
 			CMD_0529();
 			break;
-	
+
 		case 0x052D:
 			CMD_052D(UART_Command.Buffer);
 			break;
-	
+
 		case 0x052F:
 			CMD_052F(UART_Command.Buffer);
 			break;
-	
+
 		case 0x05DD: // reset
 			#if defined(ENABLE_OVERLAY)
 				overlay_FLASH_RebootToBootloader();
@@ -610,12 +610,12 @@ void UART_HandleCommand(void)
 				NVIC_SystemReset();
 			#endif
 			break;
-			
+
 #ifdef ENABLE_UART_RW_BK_REGS
 		case 0x0601:
 			CMD_0601_ReadBK4819Reg(UART_Command.Buffer);
 			break;
-		
+
 		case 0x0602:
 			CMD_0602_WriteBK4819Reg(UART_Command.Buffer);
 			break;
