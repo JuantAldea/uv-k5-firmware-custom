@@ -58,7 +58,7 @@ void toggle_chan_scanlist(void)
 #endif
 		return;
 	}
-	
+
 	if (gTxVfo->SCANLIST1_PARTICIPATION ^ gTxVfo->SCANLIST2_PARTICIPATION){
 		gTxVfo->SCANLIST2_PARTICIPATION = gTxVfo->SCANLIST1_PARTICIPATION;
 	} else {
@@ -180,7 +180,7 @@ static void processFKeyFunction(const KEY_Code_t Key, const bool beep)
 
 			gBackup_CROSS_BAND_RX_TX  = gEeprom.CROSS_BAND_RX_TX;
 			gEeprom.CROSS_BAND_RX_TX = CROSS_BAND_OFF;
-			gUpdateStatus            = true;		
+			gUpdateStatus            = true;
 			if (beep)
 				gBeepToPlay = BEEP_1KHZ_60MS_OPTIONAL;
 
@@ -538,9 +538,9 @@ static void MAIN_Key_STAR(bool bKeyPressed, bool bKeyHeld)
 		return;
 	}
 
-	if (bKeyHeld && !gWasFKeyPressed){ // long press
+	if (bKeyHeld && !gWasFKeyPressed) { // long press
 		if (!bKeyPressed) // released
-			return; 
+			return;
 
 		ACTION_Scan(false);// toggle scanning
 
@@ -551,22 +551,22 @@ static void MAIN_Key_STAR(bool bKeyPressed, bool bKeyHeld)
 	if (bKeyPressed) { // just pressed
 		return;
 	}
-	
+
 	// just released
-	
+
 	if (!gWasFKeyPressed) // pressed without the F-key
-	{	
-		if (gScanStateDir == SCAN_OFF 
+	{
+		if (gScanStateDir == SCAN_OFF
 #ifdef ENABLE_NOAA
 			&& !IS_NOAA_CHANNEL(gTxVfo->CHANNEL_SAVE)
 #endif
 #ifdef ENABLE_SCAN_RANGES
 			&& gScanRangeStart == 0
-#endif		
+#endif
 		)
 		{	// start entering a DTMF string
 			gBeepToPlay = BEEP_1KHZ_60MS_OPTIONAL;
-			memcpy(gDTMF_InputBox, gDTMF_String, MIN(sizeof(gDTMF_InputBox), sizeof(gDTMF_String) - 1));
+			strcpy(gDTMF_InputBox, gDTMF_String);
 			gDTMF_InputBox_Index  = 0;
 			gDTMF_InputMode       = true;
 
@@ -585,7 +585,7 @@ static void MAIN_Key_STAR(bool bKeyPressed, bool bKeyHeld)
 		if (IS_NOAA_CHANNEL(gTxVfo->CHANNEL_SAVE)) {
 			gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
 			return;
-		}				
+		}
 #endif
 		// scan the CTCSS/DCS code
 		gBackup_CROSS_BAND_RX_TX  = gEeprom.CROSS_BAND_RX_TX;
@@ -593,7 +593,7 @@ static void MAIN_Key_STAR(bool bKeyPressed, bool bKeyHeld)
 		SCANNER_Start(true);
 		gRequestDisplayScreen = DISPLAY_SCANNER;
 	}
-	
+
 	gPttWasReleased = true;
 	gUpdateStatus   = true;
 }
@@ -695,7 +695,7 @@ void MAIN_ProcessKeys(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 		const char Character = DTMF_GetCharacter(Key);
 		if (Character != 0xFF)
 		{	// add key to DTMF string
-			DTMF_Append(Character);
+			DTMF_StringAppend(Character);
 			gKeyInputCountdown    = key_input_timeout_500ms;
 			gRequestDisplayScreen = DISPLAY_MAIN;
 			gPttWasReleased       = true;
