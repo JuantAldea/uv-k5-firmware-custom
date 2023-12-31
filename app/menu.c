@@ -1686,16 +1686,7 @@ void MENU_ProcessKeys(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 {
 	switch (Key)
 	{
-		case KEY_0:
-		case KEY_1:
-		case KEY_2:
-		case KEY_3:
-		case KEY_4:
-		case KEY_5:
-		case KEY_6:
-		case KEY_7:
-		case KEY_8:
-		case KEY_9:
+		case KEY_0...KEY_9:
 			MENU_Key_0_to_9(Key, bKeyPressed, bKeyHeld);
 			break;
 		case KEY_MENU:
@@ -1746,16 +1737,14 @@ void MENU_ProcessKeys(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 
 	if (gScreenToDisplay == DISPLAY_MENU)
 	{
-		if (UI_MENU_GetCurrentMenuId() == MENU_VOL ||
-			#ifdef ENABLE_F_CAL_MENU
-				UI_MENU_GetCurrentMenuId() == MENU_F_CALI ||
-		    #endif
-			UI_MENU_GetCurrentMenuId() == MENU_BATCAL)
-		{
+		if (UI_MENU_GetCurrentMenuId() == MENU_VOL
+			|| UI_MENU_GetCurrentMenuId() == MENU_BATCAL
+#ifdef ENABLE_F_CAL_MENU
+			|| UI_MENU_GetCurrentMenuId() == MENU_F_CALI
+#endif
+		) {
 			gMenuCountdown = menu_timeout_long_500ms;
-		}
-		else
-		{
+		} else {
 			gMenuCountdown = menu_timeout_500ms;
 		}
 	}

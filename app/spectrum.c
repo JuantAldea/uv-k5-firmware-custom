@@ -16,6 +16,7 @@
 #include "app/spectrum.h"
 #include "am_fix.h"
 #include "audio.h"
+#include "driver/keyboard.h"
 #include "misc.h"
 
 #ifdef ENABLE_SCAN_RANGES
@@ -888,16 +889,7 @@ static void OnKeyDown(uint8_t key) {
 
 static void OnKeyDownFreqInput(uint8_t key) {
   switch (key) {
-  case KEY_0:
-  case KEY_1:
-  case KEY_2:
-  case KEY_3:
-  case KEY_4:
-  case KEY_5:
-  case KEY_6:
-  case KEY_7:
-  case KEY_8:
-  case KEY_9:
+  case KEY_0...KEY_9:
   case KEY_STAR:
     UpdateFreqInput(key);
     break;
