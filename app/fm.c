@@ -580,6 +580,8 @@ void FM_Key_F(void)
 
 void FM_Play(void)
 {
+	gScheduleFM = false;
+
 	if (!FM_CheckFrequencyLock(gEeprom.FM_FrequencyPlaying, gEeprom.FM_LowerLimit))
 	{
 		if (!gFM_AutoScan)
