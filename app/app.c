@@ -1113,26 +1113,28 @@ void APP_TimeSlice10ms(void)
 	}
 #endif
 
-	if (gReducedService)
+	if (gReducedService) {
 		return;
-
-	if (gCurrentFunction != FUNCTION_POWER_SAVE || !gRxIdleMode)
-		CheckRadioInterrupts();
-
-	if (gCurrentFunction == FUNCTION_TRANSMIT)
-	{	// transmitting
-#ifdef ENABLE_AUDIO_BAR
-		if (gSetting_mic_bar && (gFlashLightBlinkCounter % (150 / 10)) == 0) // once every 150ms
-			UI_DisplayAudioBar();
-#endif
 	}
+
+	if (gCurrentFunction != FUNCTION_POWER_SAVE || !gRxIdleMode) {
+		CheckRadioInterrupts();
+	}
+
+#ifdef ENABLE_AUDIO_BAR
+	if (gCurrentFunction == FUNCTION_TRANSMIT && gSetting_mic_bar && (gFlashLightBlinkCounter % (150 / 10)) == 0) {
+		// transmitting
+		UI_DisplayAudioBar();
+	}
+#endif
 
 	if (gUpdateDisplay) {
 		GUI_DisplayScreen();
 	}
 
-	if (gUpdateStatus)
+	if (gUpdateStatus) {
 		UI_DisplayStatus();
+	}
 
 	// Skipping authentic device checks
 

@@ -14,34 +14,36 @@ void FlashlightTimeSlice()
 		return;
 	}
 
-	if (gFlashLightState == FLASHLIGHT_SOS) {
-		const uint16_t u = 15;
-		static uint8_t c;
-		static uint16_t next;
+	if (gFlashLightState != FLASHLIGHT_SOS) {
+		return;
+	}
 
-		if (gFlashLightBlinkCounter - next > 7 * u) {
+	const uint16_t u = 15;
+	static uint8_t c;
+	static uint16_t next;
+
+	if (gFlashLightBlinkCounter - next > 7 * u) {
+		c = 0;
+		next = gFlashLightBlinkCounter + 1;
+		return;
+	}
+
+	if (gFlashLightBlinkCounter == next) {
+		if (c==0) {
+			GPIO_ClearBit(&GPIOC->DATA, GPIOC_PIN_FLASHLIGHT);
+		} else {
+			GPIO_FlipBit(&GPIOC->DATA, GPIOC_PIN_FLASHLIGHT);
+		}
+
+		if (c >= 18) {
+			next = gFlashLightBlinkCounter + 7 * u;
 			c = 0;
-			next = gFlashLightBlinkCounter + 1;
-			return;
+		} else if(c==7 || c==9 || c==11) {
+			next = gFlashLightBlinkCounter + 3 * u;
+		} else {
+			next = gFlashLightBlinkCounter + u;
 		}
-
-		if (gFlashLightBlinkCounter == next) {
-			if (c==0) {
-				GPIO_ClearBit(&GPIOC->DATA, GPIOC_PIN_FLASHLIGHT);
-			} else {
-				GPIO_FlipBit(&GPIOC->DATA, GPIOC_PIN_FLASHLIGHT);
-			}
-
-			if (c >= 18) {
-				next = gFlashLightBlinkCounter + 7 * u;
-				c = 0;
-			} else if(c==7 || c==9 || c==11) {
-				next = gFlashLightBlinkCounter + 3 * u;
-			} else {
-				next = gFlashLightBlinkCounter + u;
-			}
-			c++;
-		}
+		c++;
 	}
 }
 
