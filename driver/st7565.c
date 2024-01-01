@@ -29,7 +29,7 @@ uint8_t gStatusLine[LCD_WIDTH];
 uint8_t gFrameBuffer[FRAME_LINES][LCD_WIDTH];
 
 static void DrawLine(uint8_t column, uint8_t line, const uint8_t * lineBuffer, unsigned size_defVal)
-{	
+{
 	ST7565_SelectColumnAndLine(column + 4, line);
 	GPIO_SetBit(&GPIOB->DATA, GPIOB_PIN_ST7565_A0);
 	for (unsigned i = 0; i < size_defVal; i++) {
@@ -56,20 +56,23 @@ void ST7565_BlitFullScreen(void)
 	SPI_ToggleMasterMode(&SPI0->CR, true);
 }
 
-void ST7565_BlitLine(unsigned line)
+static void _ST7565_BlitLine(unsigned line, uint8_t *pLine)
 {
 	SPI_ToggleMasterMode(&SPI0->CR, false);
 	ST7565_WriteByte(0x40);    // start line ?
-	DrawLine(0, line+1, gFrameBuffer[line], LCD_WIDTH);
+	DrawLine(0, line, pLine, LCD_WIDTH);
 	SPI_ToggleMasterMode(&SPI0->CR, true);
 }
 
+void ST7565_BlitLine(unsigned line)
+{
+	_ST7565_BlitLine(line+1, gFrameBuffer[line]);
+}
+
 void ST7565_BlitStatusLine(void)
-{	// the top small text line on the display
-	SPI_ToggleMasterMode(&SPI0->CR, false);
-	ST7565_WriteByte(0x40);    // start line ?
-	DrawLine(0, 0, gStatusLine, LCD_WIDTH);
-	SPI_ToggleMasterMode(&SPI0->CR, true);
+{
+	// the top small text line on the display
+	_ST7565_BlitLine(0, gStatusLine);
 }
 
 void ST7565_FillScreen(uint8_t value)
@@ -122,10 +125,10 @@ const uint8_t ST7565_CMD_SET_EV = 0x81;
 // VF: Built-in Follower
 const uint8_t ST7565_CMD_POWER_CIRCUIT = 0x28;
 // Set display start line 0-63
-// 0 0 0 1 S5 S4 S3 S2 S1 S0 
+// 0 0 0 1 S5 S4 S3 S2 S1 S0
 const uint8_t ST7565_CMD_SET_START_LINE = 0x40;
-// Display ON/OFF 
-// 0 0 1 0 1 0 1 1 1 D 
+// Display ON/OFF
+// 0 0 1 0 1 0 1 1 1 D
 // D=1, display ON
 // D=0, display OFF
 const uint8_t ST7565_CMD_DISPLAY_ON_OFF = 0xAE;
@@ -141,7 +144,7 @@ uint8_t cmds[] = {
 	ST7565_CMD_SET_EV,						// Set contrast
 	31,
 
-	ST7565_CMD_POWER_CIRCUIT | 0b111,		// Built-in power circuit ON/OFF: VB=1 VR=1 VF=1 
+	ST7565_CMD_POWER_CIRCUIT | 0b111,		// Built-in power circuit ON/OFF: VB=1 VR=1 VF=1
 	ST7565_CMD_SET_START_LINE | 0,			// Set Start Line: 0
 	ST7565_CMD_DISPLAY_ON_OFF | 1,			// Display ON/OFF: ON
 };
@@ -166,7 +169,7 @@ void ST7565_Init(void)
 		ST7565_WriteByte(ST7565_CMD_POWER_CIRCUIT | 0b111);   // VB=1 VR=1 VF=1
 
 	SYSTEM_DelayMs(40);
-	
+
 	ST7565_WriteByte(ST7565_CMD_SET_START_LINE | 0);   // line 0
 	ST7565_WriteByte(ST7565_CMD_DISPLAY_ON_OFF | 1);   // D=1
 	SPI_WaitForUndocumentedTxFifoStatusBit();
