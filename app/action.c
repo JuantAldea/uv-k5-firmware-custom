@@ -161,10 +161,8 @@ void ACTION_Monitor(void)
 		gRequestDisplayScreen = gScreenToDisplay;
 }
 
-void ACTION_Scan(bool bRestart)
+void ACTION_Scan(__attribute__((unused)) bool bRestart)
 {
-	(void)bRestart;
-
 #ifdef ENABLE_FMRADIO
 	if (gFmRadioMode) {
 		ACTION_Scan_FM(bRestart);
@@ -230,7 +228,6 @@ void ACTION_Scan(bool bRestart)
 		// let the user see DW is not active
 		gDualWatchActive = false;
 	}
-
 }
 
 
