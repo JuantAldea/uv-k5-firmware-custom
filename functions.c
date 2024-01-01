@@ -52,6 +52,7 @@ bool FUNCTION_IsRx()
 
 void FUNCTION_Init(void)
 {
+	gUpdateStatus = true;
 	g_CxCSS_TAIL_Found = false;
 	g_CDCSS_Lost       = false;
 	g_CTCSS_Lost       = false;
@@ -83,8 +84,6 @@ void FUNCTION_Init(void)
 		gCurrentCodeType = CODE_TYPE_CONTINUOUS_TONE;
 	}
 #endif
-
-	gUpdateStatus = true;
 }
 
 void FUNCTION_Foreground(const FUNCTION_Type_t PreviousFunction)
@@ -94,13 +93,17 @@ void FUNCTION_Foreground(const FUNCTION_Type_t PreviousFunction)
 		RADIO_PrepareCssTX();
 #endif
 
+	if (PreviousFunction != FUNCTION_RECEIVE) {
+		return;
+	}
+
 	if (PreviousFunction == FUNCTION_TRANSMIT) {
 		ST7565_FixInterfGlitch();
 		gVFO_RSSI_bar_level[0] = 0;
 		gVFO_RSSI_bar_level[1] = 0;
-	} else if (PreviousFunction != FUNCTION_RECEIVE) {
-		return;
 	}
+
+	gUpdateStatus = true;
 
 #if defined(ENABLE_FMRADIO)
 	if (gFmRadioMode)
@@ -115,7 +118,6 @@ void FUNCTION_Foreground(const FUNCTION_Type_t PreviousFunction)
 		gDTMF_auto_reset_time_500ms = gEeprom.DTMF_auto_reset_time * 2;
 	}
 #endif
-	gUpdateStatus = true;
 }
 
 void FUNCTION_PowerSave() {
