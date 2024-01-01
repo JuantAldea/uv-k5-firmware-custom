@@ -73,7 +73,8 @@
 #include "ui/ui.h"
 
 static void ProcessKey(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld);
-
+static void APP_SchedulePowerSave();
+static void APP_PowerSave();
 
 void (*ProcessKeysFunctions[])(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld) = {
 	[DISPLAY_MAIN] = &MAIN_ProcessKeys,
@@ -788,8 +789,8 @@ void APP_Update(void)
 {
 #ifdef ENABLE_VOICE
 	if (gFlagPlayQueuedVoice) {
-			AUDIO_PlayQueuedVoice();
-			gFlagPlayQueuedVoice = false;
+		AUDIO_PlayQueuedVoice();
+		gFlagPlayQueuedVoice = false;
 	}
 #endif
 
@@ -806,40 +807,41 @@ void APP_Update(void)
 		GUI_DisplayScreen();
 	}
 
-	if (gReducedService)
+	if (gReducedService) {
 		return;
+	}
 
-	if (gCurrentFunction != FUNCTION_TRANSMIT)
+	if (gCurrentFunction != FUNCTION_TRANSMIT) {
 		HandleFunction();
+	}
 
 #ifdef ENABLE_FMRADIO
-//	if (gFmRadioCountdown_500ms > 0)
-	if (gFmRadioMode && gFmRadioCountdown_500ms > 0)    // 1of11
+	if (gFmRadioMode && gFmRadioCountdown_500ms > 0) {
+		// 1of11
 		return;
+	}
 #endif
 
+	if (!SCANNER_IsScanning() && gScanStateDir != SCAN_OFF && gScheduleScanListen && !gPttIsPressed
 #ifdef ENABLE_VOICE
-	if (!SCANNER_IsScanning() && gScanStateDir != SCAN_OFF && gScheduleScanListen && !gPttIsPressed && gVoiceWriteIndex == 0)
-#else
-	if (!SCANNER_IsScanning() && gScanStateDir != SCAN_OFF && gScheduleScanListen && !gPttIsPressed)
+		&& gVoiceWriteIndex == 0
 #endif
-	{	// scanning
+	) {
 		CHFRSCANNER_ContinueScanning();
 	}
 
 #ifdef ENABLE_NOAA
+	if (gEeprom.DUAL_WATCH == DUAL_WATCH_OFF && gIsNoaaMode && gScheduleNOAA
 #ifdef ENABLE_VOICE
-		if (gEeprom.DUAL_WATCH == DUAL_WATCH_OFF && gIsNoaaMode && gScheduleNOAA && gVoiceWriteIndex == 0)
-#else
-		if (gEeprom.DUAL_WATCH == DUAL_WATCH_OFF && gIsNoaaMode && gScheduleNOAA)
+		&& gVoiceWriteIndex == 0
 #endif
-		{
-			NOAA_IncreaseChannel();
-			RADIO_SetupRegisters(false);
+	) {
+		NOAA_IncreaseChannel();
+		RADIO_SetupRegisters(false);
 
-			gNOAA_Countdown_10ms = 7;      // 70ms
-			gScheduleNOAA        = false;
-		}
+		gNOAA_Countdown_10ms = 7;      // 70ms
+		gScheduleNOAA        = false;
+	}
 #endif
 
 	// toggle between the VFO's if dual watch is enabled
@@ -875,38 +877,17 @@ void APP_Update(void)
 	if (gScheduleFM && gFM_ScanState != FM_SCAN_OFF && !FUNCTION_IsRx()) {
 		// switch to FM radio mode
 		FM_Play();
-		gScheduleFM = false;
 	}
 #endif
 
 #ifdef ENABLE_VOX
-	if (gEeprom.VOX_SWITCH)
+	if (gEeprom.VOX_SWITCH) {
 		HandleVox();
+	}
 #endif
 
 	if (gSchedulePowerSave) {
-		if (gPttIsPressed
-			|| gKeyBeingHeld
-			|| gEeprom.BATTERY_SAVE == 0
-			|| gScanStateDir != SCAN_OFF
-			|| gCssBackgroundScan
-			|| gScreenToDisplay != DISPLAY_MAIN
-#ifdef ENABLE_FMRADIO
-			|| gFmRadioMode
-#endif
-#ifdef ENABLE_DTMF_CALLING
-			|| gDTMF_CallState != DTMF_CALL_STATE_NONE
-#endif
-#ifdef ENABLE_NOAA
-			|| (gIsNoaaMode && (IS_NOAA_CHANNEL(gEeprom.ScreenChannel[0]) || IS_NOAA_CHANNEL(gEeprom.ScreenChannel[1])))
-#endif
-		) {
-			gBatterySaveCountdown_10ms = battery_save_count_10ms;
-		} else {
-			FUNCTION_Select(FUNCTION_POWER_SAVE);
-		}
-
-		gSchedulePowerSave = false;
+		APP_SchedulePowerSave();
 	}
 
 	if (gPowerSaveCountdownExpired && gCurrentFunction == FUNCTION_POWER_SAVE
@@ -914,54 +895,81 @@ void APP_Update(void)
 		&& gVoiceWriteIndex == 0
 #endif
 	) {
-		static bool goToSleep;
-		// wake up, enable RX then go back to sleep
-		if (gRxIdleMode)
-		{
-			BK4819_Conditional_RX_TurnOn_and_GPIO6_Enable();
+		APP_PowerSave();
+	}
+}
+
+static void APP_SchedulePowerSave()
+{
+	if (gPttIsPressed
+		|| gKeyBeingHeld
+		|| gEeprom.BATTERY_SAVE == 0
+		|| gScanStateDir != SCAN_OFF
+		|| gCssBackgroundScan
+		|| gScreenToDisplay != DISPLAY_MAIN
+#ifdef ENABLE_FMRADIO
+		|| gFmRadioMode
+#endif
+#ifdef ENABLE_DTMF_CALLING
+		|| gDTMF_CallState != DTMF_CALL_STATE_NONE
+#endif
+#ifdef ENABLE_NOAA
+		|| (gIsNoaaMode && (IS_NOAA_CHANNEL(gEeprom.ScreenChannel[0]) || IS_NOAA_CHANNEL(gEeprom.ScreenChannel[1])))
+#endif
+	) {
+		gBatterySaveCountdown_10ms = battery_save_count_10ms;
+	} else {
+		FUNCTION_Select(FUNCTION_POWER_SAVE);
+	}
+
+	gSchedulePowerSave = false;
+}
+
+static void APP_PowerSave()
+{
+	static bool goToSleep;
+	// wake up, enable RX then go back to sleep
+	if (gRxIdleMode) {
+		BK4819_Conditional_RX_TurnOn_and_GPIO6_Enable();
 
 #ifdef ENABLE_VOX
-			if (gEeprom.VOX_SWITCH)
-				BK4819_EnableVox(gEeprom.VOX1_THRESHOLD, gEeprom.VOX0_THRESHOLD);
+		if (gEeprom.VOX_SWITCH) {
+			BK4819_EnableVox(gEeprom.VOX1_THRESHOLD, gEeprom.VOX0_THRESHOLD);
+		}
 #endif
 
-			if (gEeprom.DUAL_WATCH != DUAL_WATCH_OFF &&
-			    gScanStateDir == SCAN_OFF &&
-			    !gCssBackgroundScan)
-			{	// dual watch mode, toggle between the two VFO's
-				DualwatchAlternate();
-				goToSleep = false;
-			}
-
-			FUNCTION_Init();
-
-			gPowerSave_10ms = power_save1_10ms; // come back here in a bit
-			gRxIdleMode     = false;            // RX is awake
-		}
-		else if (gEeprom.DUAL_WATCH == DUAL_WATCH_OFF || gScanStateDir != SCAN_OFF || gCssBackgroundScan || goToSleep)
-		{	// dual watch mode off or scanning or rssi update request
-			// go back to sleep
-
-			gPowerSave_10ms = gEeprom.BATTERY_SAVE * 10;
-			gRxIdleMode     = true;
-			goToSleep = false;
-
-			BK4819_DisableVox();
-			BK4819_Sleep();
-			BK4819_ToggleGpioOut(BK4819_GPIO0_PIN28_RX_ENABLE, false);
-
-			// Authentic device checked removed
-
-		}
-		else {
-			// toggle between the two VFO's
+		if (gEeprom.DUAL_WATCH != DUAL_WATCH_OFF && gScanStateDir == SCAN_OFF && !gCssBackgroundScan) {
+			// dual watch mode, toggle between the two VFO's
 			DualwatchAlternate();
-			gPowerSave_10ms   = power_save1_10ms;
-			goToSleep = true;
+			goToSleep = false;
 		}
 
-		gPowerSaveCountdownExpired = false;
+		FUNCTION_Init();
+
+		gPowerSave_10ms = power_save1_10ms; // come back here in a bit
+		gRxIdleMode     = false;            // RX is awake
+	} else if (gEeprom.DUAL_WATCH == DUAL_WATCH_OFF || gScanStateDir != SCAN_OFF || gCssBackgroundScan || goToSleep) {
+		// dual watch mode off or scanning or rssi update request
+		// go back to sleep
+
+		gPowerSave_10ms = gEeprom.BATTERY_SAVE * 10;
+		gRxIdleMode     = true;
+		goToSleep = false;
+
+		BK4819_DisableVox();
+		BK4819_Sleep();
+		BK4819_ToggleGpioOut(BK4819_GPIO0_PIN28_RX_ENABLE, false);
+
+		// Authentic device checked removed
+
+	} else {
+		// toggle between the two VFO's
+		DualwatchAlternate();
+		gPowerSave_10ms   = power_save1_10ms;
+		goToSleep = true;
 	}
+
+	gPowerSaveCountdownExpired = false;
 }
 
 bool DebounceRead(uint8_t ReadValue, uint8_t *pDebounceCounter, uint8_t TargetValue, uint16_t TargetCount)
