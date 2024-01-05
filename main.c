@@ -31,6 +31,7 @@
 
 #include "app/app.h"
 #include "app/dtmf.h"
+#include "app/terminal.h"
 #include "bsp/dp32g030/gpio.h"
 #include "bsp/dp32g030/syscon.h"
 
@@ -218,6 +219,8 @@ void Main(void)
 		RADIO_ConfigureNOAA();
 #endif
 	}
+
+	TERMINAL_Demo();
 
 	while (true) {
 		APP_Update();

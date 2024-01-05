@@ -46,6 +46,12 @@ void ST7565_DrawLine(const unsigned int Column, const unsigned int Line, const u
 	SPI_ToggleMasterMode(&SPI0->CR, true);
 }
 
+void ST7565_BlitDisplay(void)
+{
+	ST7565_BlitFullScreen();
+	ST7565_BlitStatusLine();
+}
+
 void ST7565_BlitFullScreen(void)
 {
 	SPI_ToggleMasterMode(&SPI0->CR, false);

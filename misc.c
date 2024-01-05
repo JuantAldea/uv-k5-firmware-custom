@@ -255,6 +255,7 @@ uint8_t           gIsLocked = 0xFF;
 
 inline void FUNCTION_NOP() { ; }
 
+inline void TRAP() { while(true) {;} }
 
 int32_t NUMBER_AddWithWraparound(int32_t Base, int32_t Add, int32_t LowerLimit, int32_t UpperLimit)
 {

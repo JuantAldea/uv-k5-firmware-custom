@@ -335,6 +335,7 @@ int32_t NUMBER_AddWithWraparound(int32_t Base, int32_t Add, int32_t LowerLimit, 
 unsigned long StrToUL(const char * str);
 
 void FUNCTION_NOP();
+void TRAP();
 
 inline bool SerialConfigInProgress() { return gSerialConfigCountDown_500ms != 0; }
 
