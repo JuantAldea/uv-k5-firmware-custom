@@ -423,13 +423,15 @@ void APP_StartListening(FUNCTION_Type_t function)
 	const unsigned int vfo = gEeprom.RX_VFO;
 
 #ifdef ENABLE_DTMF_CALLING
-	if (gSetting_KILLED)
+	if (gSetting_KILLED) {
 		return;
+	}
 #endif
 
 #ifdef ENABLE_FMRADIO
-	if (gFmRadioMode)
+	if (gFmRadioMode) {
 		BK1080_Init(0, false);
+	}
 #endif
 
 	// clear the other vfo's rssi level (to hide the antenna symbol)
@@ -442,8 +444,9 @@ void APP_StartListening(FUNCTION_Type_t function)
 		BACKLIGHT_TurnOn();
 	}
 
-	if (gScanStateDir != SCAN_OFF)
+	if (gScanStateDir != SCAN_OFF) {
 		CHFRSCANNER_Found();
+	}
 
 #ifdef ENABLE_NOAA
 	if (IS_NOAA_CHANNEL(gRxVfo->CHANNEL_SAVE) && gIsNoaaMode) {
@@ -480,35 +483,43 @@ void APP_StartListening(FUNCTION_Type_t function)
 		(gEeprom.DAC_GAIN    << 0));     // AF DAC Gain (after Gain-1 and Gain-2)
 
 #ifdef ENABLE_VOICE
-	if (gVoiceWriteIndex == 0)       // AM/FM RX mode will be set when the voice has finished
+	if (gVoiceWriteIndex == 0)
+		// AM/FM RX mode will be set when the voice has finished
 #endif
+	{
 		RADIO_SetModulation(gRxVfo->Modulation);  // no need, set it now
+	}
 
 	FUNCTION_Select(function);
 
+	if (function == FUNCTION_MONITOR
 #ifdef ENABLE_FMRADIO
-	if (function == FUNCTION_MONITOR || gFmRadioMode)
-#else
-	if (function == FUNCTION_MONITOR)
+		|| gFmRadioMode
 #endif
-	{	// squelch is disabled
-		if (gScreenToDisplay != DISPLAY_MENU)     // 1of11 .. don't close the menu
+	) {
+		// squelch is disabled
+		if (gScreenToDisplay != DISPLAY_MENU) {
+			// 1of11 .. don't close the menu
 			GUI_SelectNextDisplay(DISPLAY_MAIN);
-	}
-	else
+		}
+	} else {
 		gUpdateDisplay = true;
+	}
 
 	gUpdateStatus = true;
 }
 
 uint32_t APP_SetFreqByStepAndLimits(VFO_Info_t *pInfo, int8_t direction, uint32_t lower, uint32_t upper)
 {
-	uint32_t Frequency = FREQUENCY_RoundToStep(pInfo->freq_config_RX.Frequency + (direction * pInfo->StepFrequency), pInfo->StepFrequency);
+	const uint32_t Frequency = FREQUENCY_RoundToStep(pInfo->freq_config_RX.Frequency + (direction * pInfo->StepFrequency), pInfo->StepFrequency);
 
-	if (Frequency >= upper)
-		Frequency =  lower;
-	else if (Frequency < lower)
-		Frequency = FREQUENCY_RoundToStep(upper - pInfo->StepFrequency, pInfo->StepFrequency);
+	if (Frequency >= upper) {
+		return lower;
+	}
+
+	if (Frequency < lower) {
+		return FREQUENCY_RoundToStep(upper - pInfo->StepFrequency, pInfo->StepFrequency);
+	}
 
 	return Frequency;
 }
@@ -519,30 +530,29 @@ uint32_t APP_SetFrequencyByStep(VFO_Info_t *pInfo, int8_t direction)
 }
 
 #ifdef ENABLE_NOAA
-	static void NOAA_IncreaseChannel(void)
-	{
-		if (++gNoaaChannel > 9)
-			gNoaaChannel = 0;
+static void NOAA_IncreaseChannel(void)
+{
+	if (++gNoaaChannel > 9) {
+		gNoaaChannel = 0;
 	}
+}
 #endif
 
 static void DualwatchAlternate(void)
 {
-	#ifdef ENABLE_NOAA
-		if (gIsNoaaMode)
-		{
-			if (!IS_NOAA_CHANNEL(gEeprom.ScreenChannel[0]) || !IS_NOAA_CHANNEL(gEeprom.ScreenChannel[1]))
-				gEeprom.RX_VFO = (gEeprom.RX_VFO + 1) & 1;
-			else
-				gEeprom.RX_VFO = 0;
-
-			gRxVfo = &gEeprom.VfoInfo[gEeprom.RX_VFO];
-
-			if (IS_NOAA_CHANNEL(gEeprom.VfoInfo[0].CHANNEL_SAVE))
-				NOAA_IncreaseChannel();
-		}
+#ifdef ENABLE_NOAA
+	if (gIsNoaaMode) {
+		if (!IS_NOAA_CHANNEL(gEeprom.ScreenChannel[0]) || !IS_NOAA_CHANNEL(gEeprom.ScreenChannel[1]))
+			gEeprom.RX_VFO = (gEeprom.RX_VFO + 1) & 1;
 		else
-	#endif
+			gEeprom.RX_VFO = 0;
+
+		gRxVfo = &gEeprom.VfoInfo[gEeprom.RX_VFO];
+
+		if (IS_NOAA_CHANNEL(gEeprom.VfoInfo[0].CHANNEL_SAVE))
+			NOAA_IncreaseChannel();
+	} else
+#endif
 	{	// toggle between VFO's
 		gEeprom.RX_VFO = !gEeprom.RX_VFO;
 		gRxVfo         = &gEeprom.VfoInfo[gEeprom.RX_VFO];
@@ -717,7 +727,7 @@ void APP_EndTransmission(bool inmediately)
 	RADIO_SendEndOfTransmission();
 
 	if (gMonitor) {
-		 //turn the monitor back on
+		//turn the monitor back on
 		gFlagReconfigureVfos = true;
 	}
 
@@ -732,8 +742,9 @@ void APP_EndTransmission(bool inmediately)
 static void HandleVox(void)
 {
 #ifdef ENABLE_DTMF_CALLING
-	if (gSetting_KILLED)
+	if (gSetting_KILLED) {
 		return;
+	}
 #endif
 
 	if (gVoxResumeCountdown == 0)
@@ -747,10 +758,10 @@ static void HandleVox(void)
 		gVoxPauseCountdown = 0;
 	}
 
-	#ifdef ENABLE_FMRADIO
-		if (gFmRadioMode)
-			return;
-	#endif
+#ifdef ENABLE_FMRADIO
+	if (gFmRadioMode)
+		return;
+#endif
 
 	if (gCurrentFunction == FUNCTION_RECEIVE || gCurrentFunction == FUNCTION_MONITOR)
 		return;
@@ -1164,57 +1175,57 @@ void APP_TimeSlice10ms(void)
 
 	if (gCurrentFunction == FUNCTION_TRANSMIT)
 	{
-		#ifdef ENABLE_ALARM
-			if (gAlarmState == ALARM_STATE_TXALARM || gAlarmState == ALARM_STATE_SITE_ALARM)
+#ifdef ENABLE_ALARM
+		if (gAlarmState == ALARM_STATE_TXALARM || gAlarmState == ALARM_STATE_SITE_ALARM)
+		{
+			uint16_t Tone;
+
+			gAlarmRunningCounter++;
+			gAlarmToneCounter++;
+
+			Tone = 500 + (gAlarmToneCounter * 25);
+			if (Tone > 1500)
 			{
-				uint16_t Tone;
+				Tone              = 500;
+				gAlarmToneCounter = 0;
+			}
 
-				gAlarmRunningCounter++;
-				gAlarmToneCounter++;
+			BK4819_SetScrambleFrequencyControlWord(Tone);
 
-				Tone = 500 + (gAlarmToneCounter * 25);
-				if (Tone > 1500)
+			if (gEeprom.ALARM_MODE == ALARM_MODE_TONE && gAlarmRunningCounter == 512)
+			{
+				gAlarmRunningCounter = 0;
+
+				if (gAlarmState == ALARM_STATE_TXALARM)
 				{
-					Tone              = 500;
+					gAlarmState = ALARM_STATE_SITE_ALARM;
+
+					RADIO_EnableCxCSS();
+					BK4819_SetupPowerAmplifier(0, 0);
+					BK4819_ToggleGpioOut(BK4819_GPIO1_PIN29_PA_ENABLE, false);
+					BK4819_Enable_AfDac_DiscMode_TxDsp();
+					BK4819_ToggleGpioOut(BK4819_GPIO5_PIN1_RED, false);
+
+					GUI_DisplayScreen();
+				}
+				else
+				{
+					gAlarmState = ALARM_STATE_TXALARM;
+
+					GUI_DisplayScreen();
+
+					BK4819_ToggleGpioOut(BK4819_GPIO5_PIN1_RED, true);
+					RADIO_SetTxParameters();
+					BK4819_TransmitTone(true, 500);
+					SYSTEM_DelayMs(2);
+					AUDIO_AudioPathOn();
+
+					gEnableSpeaker    = true;
 					gAlarmToneCounter = 0;
 				}
-
-				BK4819_SetScrambleFrequencyControlWord(Tone);
-
-				if (gEeprom.ALARM_MODE == ALARM_MODE_TONE && gAlarmRunningCounter == 512)
-				{
-					gAlarmRunningCounter = 0;
-
-					if (gAlarmState == ALARM_STATE_TXALARM)
-					{
-						gAlarmState = ALARM_STATE_SITE_ALARM;
-
-						RADIO_EnableCxCSS();
-						BK4819_SetupPowerAmplifier(0, 0);
-						BK4819_ToggleGpioOut(BK4819_GPIO1_PIN29_PA_ENABLE, false);
-						BK4819_Enable_AfDac_DiscMode_TxDsp();
-						BK4819_ToggleGpioOut(BK4819_GPIO5_PIN1_RED, false);
-
-						GUI_DisplayScreen();
-					}
-					else
-					{
-						gAlarmState = ALARM_STATE_TXALARM;
-
-						GUI_DisplayScreen();
-
-						BK4819_ToggleGpioOut(BK4819_GPIO5_PIN1_RED, true);
-						RADIO_SetTxParameters();
-						BK4819_TransmitTone(true, 500);
-						SYSTEM_DelayMs(2);
-						AUDIO_AudioPathOn();
-
-						gEnableSpeaker    = true;
-						gAlarmToneCounter = 0;
-					}
-				}
 			}
-		#endif
+		}
+#endif
 
 		// repeater tail tone elimination
 		if (gRTTECountdown > 0 && gRTTECountdown-- == 0) {
@@ -1318,14 +1329,12 @@ void APP_TimeSlice500ms(void)
 	}
 #endif
 
-	if (gMenuCountdown > 0)
-		if (--gMenuCountdown == 0)
-			exit_menu = (gScreenToDisplay == DISPLAY_MENU);	// exit menu mode
+	if (gMenuCountdown > 0 && --gMenuCountdown == 0)
+		exit_menu = (gScreenToDisplay == DISPLAY_MENU);	// exit menu mode
 
 #ifdef ENABLE_DTMF_CALLING
-	if (gDTMF_RX_timeout > 0)
-		if (--gDTMF_RX_timeout == 0)
-			DTMF_clear_RX();
+	if (gDTMF_RX_timeout > 0 && --gDTMF_RX_timeout == 0)
+		DTMF_clear_RX();
 #endif
 
 	// Skipped authentic device check

@@ -228,7 +228,7 @@ static void processFKeyFunction(const KEY_Code_t Key, const bool beep)
 			break;
 
 		case KEY_8:
-			gTxVfo->FrequencyReverse = gTxVfo->FrequencyReverse == false;
+			gTxVfo->FrequencyReverse = !gTxVfo->FrequencyReverse;
 			gRequestSaveChannel = 1;
 			break;
 
