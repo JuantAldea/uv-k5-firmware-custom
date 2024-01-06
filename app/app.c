@@ -1015,16 +1015,17 @@ static void CheckKeys(void)
 // -------------------- PTT ------------------------
 	const uint8_t PttPinHigh = !!GPIO_CheckBit(&GPIOC->DATA, GPIOC_PIN_PTT);
 	if (gPttIsPressed) {
-		if (DebounceRead(PttPinHigh, &gPttDebounceCounter, true, 3) || SerialConfigInProgress()) {
+		if ((gRxVfo->Modulation == MODULATION_CW && PttPinHigh) || DebounceRead(PttPinHigh, &gPttDebounceCounter, true, 3) || SerialConfigInProgress()) {
 			ProcessKey(KEY_PTT, false, false);
 			if (gKeyReading1 != KEY_INVALID) {
 				gPttWasReleased = true;
 			}
 		}
-	} else if (DebounceRead(PttPinHigh, &gPttDebounceCounter, false, 3) && !SerialConfigInProgress()) {
+	} else if ((gRxVfo->Modulation == MODULATION_CW && !PttPinHigh) ||  (DebounceRead(PttPinHigh, &gPttDebounceCounter, false, 3) && !SerialConfigInProgress()) ) {
 		// PTT pressed
 		boot_counter_10ms   = 0;
 		ProcessKey(KEY_PTT, true, false);
+		BK4819_TransmitTone(gEeprom.PLAY_SIDE_TONE, 440);
 	}
 
 // --------------------- OTHER KEYS ----------------------------

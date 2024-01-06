@@ -33,7 +33,7 @@ enum BK4819_AF_Type_t
 	BK4819_AF_CTCO      =  6u,  // strange LF audio .. maybe the CTCSS LF line ?
 	BK4819_AF_AM        =  7u,  // AM
 	BK4819_AF_FSKO      =  8u,  // nothing
-	BK4819_AF_UNKNOWN3  =  9u,  // BYP
+	BK4819_AF_BYP       =  9u,  // BYP
 	BK4819_AF_UNKNOWN4  = 10u,  // nothing at all
 	BK4819_AF_UNKNOWN5  = 11u,  // distorted
 	BK4819_AF_UNKNOWN6  = 12u,  // distorted

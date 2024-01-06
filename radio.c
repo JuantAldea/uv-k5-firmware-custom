@@ -52,6 +52,7 @@ const char gModulationStr[MODULATION_UKNOWN][4] = {
 	[MODULATION_BYP]="BYP",
 	[MODULATION_RAW]="RAW"
 #endif
+	[MODULATION_CW] = "CW"
 };
 
 
@@ -879,10 +880,12 @@ void RADIO_SetModulation(ModulationMode_t modulation)
 		case MODULATION_USB:
 			mod = BK4819_AF_BASEBAND2;
 			break;
-
+		case MODULATION_CW:
+			mod = BK4819_AF_BYP;
+			break;
 #ifdef ENABLE_BYP_RAW_DEMODULATORS
 		case MODULATION_BYP:
-			mod = BK4819_AF_UNKNOWN3;
+			mod = BK4819_AF_BYP;
 			break;
 		case MODULATION_RAW:
 			mod = BK4819_AF_BASEBAND1;
@@ -894,7 +897,7 @@ void RADIO_SetModulation(ModulationMode_t modulation)
 
 	BK4819_SetRegValue(afDacGainRegSpec, 0xF);
 	BK4819_WriteRegister(BK4819_REG_3D, modulation == MODULATION_USB ? 0 : 0x2AAB);
-	BK4819_SetRegValue(afcDisableRegSpec, modulation != MODULATION_FM);
+	BK4819_SetRegValue(afcDisableRegSpec, modulation != MODULATION_FM && modulation != MODULATION_CW);
 
 	RADIO_SetupAGC(modulation == MODULATION_AM, false);
 }

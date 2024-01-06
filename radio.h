@@ -22,6 +22,7 @@
 
 #include "dcs.h"
 #include "frequencies.h"
+#include "driver/bk4819.h"
 
 enum {
 	RADIO_CHANNEL_UP   = 0x01u,
@@ -61,11 +62,12 @@ typedef enum {
 	MODULATION_USB,
 
 #ifdef ENABLE_BYP_RAW_DEMODULATORS
-	MODULATION_BYP,
-	MODULATION_RAW,
+	MODULATION_BYP = BK4819_AF_BYP,
+	MODULATION_RAW = BK4819_AF_BASEBAND1,
 #endif
+	MODULATION_CW,
 
-	MODULATION_UKNOWN
+	MODULATION_UKNOWN = 0xFF,
 } ModulationMode_t;
 
 extern const char gModulationStr[MODULATION_UKNOWN][4];
