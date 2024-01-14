@@ -180,7 +180,12 @@ static void HandleIncoming(void)
 		}
 		return;
 	}
-
+/*
+	if (gRxVfo->Modulation == MODULATION_CW) {
+		AUDIO_AudioPathOff();
+		gEnableSpeaker = false;
+	}
+	*/
 	bool bFlag = (gScanStateDir == SCAN_OFF && gCurrentCodeType == CODE_TYPE_OFF);
 
 #ifdef ENABLE_NOAA
@@ -226,12 +231,34 @@ static void HandleIncoming(void)
 		}
 	}
 #endif
-
 	APP_StartListening(gMonitor ? FUNCTION_MONITOR : FUNCTION_RECEIVE);
 }
 
+
+/*
+	if (gRxVfo->Modulation == MODULATION_CW){
+		const int16_t s0_dBm = -gEeprom.S0_LEVEL;                  // S0 .. base level
+		const int16_t rssi_dBm = BK4819_GetRSSI_dBm() + dBmCorrTable[gRxVfo->Band];
+		int s0_9 = gEeprom.S0_LEVEL - gEeprom.S9_LEVEL;
+		const uint8_t s_level = MIN(MAX((int32_t)(rssi_dBm - s0_dBm)*100 / (s0_9*100/9), 0), 9); // S0 - S9
+		printf("S_level: %d\n", s_level);
+		if (s_level > 3) {
+			AUDIO_AudioPathOff();
+			SYSTEM_DelayMs(20);
+			BK4819_PlayTone(500, 0);
+			SYSTEM_DelayMs(2);
+			AUDIO_AudioPathOn();
+			gEnableSpeaker = true;
+			SYSTEM_DelayMs(60);
+			BK4819_ExitTxMute();
+			return;
+		}
+		//AUDIO_AudioPathOff();
+		//gEnableSpeaker = false;
+	}*/
 static void HandleReceive(void)
 {
+	printf("%s %d\n", __PRETTY_FUNCTION__, __LINE__);
 	#define END_OF_RX_MODE_SKIP 0
 	#define END_OF_RX_MODE_END  1
 	#define END_OF_RX_MODE_TTE  2
@@ -241,15 +268,19 @@ static void HandleReceive(void)
 	if (gFlagTailNoteEliminationComplete)
 	{
 		Mode = END_OF_RX_MODE_END;
+		printf("%s %d\n", __PRETTY_FUNCTION__, __LINE__);
 		goto Skip;
 	}
 
 	if (gScanStateDir != SCAN_OFF && IS_FREQ_CHANNEL(gNextMrChannel))
 	{ // we are scanning in the frequency mode
-		if (g_SquelchLost)
+		if (g_SquelchLost) {
+			printf("%s %d\n", __PRETTY_FUNCTION__, __LINE__);
 			return;
+		}
 
 		Mode = END_OF_RX_MODE_END;
+		printf("%s %d\n", __PRETTY_FUNCTION__, __LINE__);
 		goto Skip;
 	}
 
@@ -260,16 +291,19 @@ static void HandleReceive(void)
 		gFoundCTCSS = false;
 		gFoundCDCSS = false;
 		Mode        = END_OF_RX_MODE_END;
+		printf("%s %d\n", __PRETTY_FUNCTION__, __LINE__);
 		goto Skip;
 	}
 
 	if (g_SquelchLost)
 	{
+		printf("%s %d\n", __PRETTY_FUNCTION__, __LINE__);
 		if (!gEndOfRxDetectedMaybe
 #ifdef ENABLE_NOAA
 			&& !IS_NOAA_CHANNEL(gRxVfo->CHANNEL_SAVE)
 #endif
 		){
+			printf("%s %d\n", __PRETTY_FUNCTION__, __LINE__);
 			switch (gCurrentCodeType)
 			{
 				case CODE_TYPE_OFF:
@@ -326,9 +360,10 @@ static void HandleReceive(void)
 					break;
 			}
 		}
-	}
-	else
+	} else {
+		printf("%s %d\n", __PRETTY_FUNCTION__, __LINE__);
 		Mode = END_OF_RX_MODE_END;
+	}
 
 	if (!gEndOfRxDetectedMaybe         &&
 	     Mode == END_OF_RX_MODE_SKIP   &&
@@ -341,12 +376,15 @@ static void HandleReceive(void)
 		gNextTimeslice40ms = false;
 
 Skip:
+	printf("%s %d\n", __PRETTY_FUNCTION__, __LINE__);
 	switch (Mode)
 	{
 		case END_OF_RX_MODE_SKIP:
+			printf("%s %d\n", __PRETTY_FUNCTION__, __LINE__);
 			break;
 
 		case END_OF_RX_MODE_END:
+			printf("%s %d\n", __PRETTY_FUNCTION__, __LINE__);
 			RADIO_SetupRegisters(true);
 
 			#ifdef ENABLE_NOAA
@@ -377,6 +415,7 @@ Skip:
 			break;
 
 		case END_OF_RX_MODE_TTE:
+			printf("%s %d\n", __PRETTY_FUNCTION__, __LINE__);
 			if (gEeprom.TAIL_TONE_ELIMINATION)
 			{
 				AUDIO_AudioPathOff();
@@ -388,6 +427,7 @@ Skip:
 			}
 			break;
 	}
+	printf("%s %d\n", __PRETTY_FUNCTION__, __LINE__);
 }
 
 static void HandlePowerSave()
@@ -416,6 +456,7 @@ static void HandleFunction(void)
 
 void APP_StartListening(FUNCTION_Type_t function)
 {
+	printf("%s %d\n", __PRETTY_FUNCTION__, function);
 	const unsigned int vfo = gEeprom.RX_VFO;
 
 #ifdef ENABLE_DTMF_CALLING
@@ -484,6 +525,29 @@ void APP_StartListening(FUNCTION_Type_t function)
 #endif
 	{
 		RADIO_SetModulation(gRxVfo->Modulation);  // no need, set it now
+	}
+
+
+	if (gRxVfo->Modulation == MODULATION_CW){
+		AUDIO_AudioPathOff();
+		const int16_t s0_dBm = -gEeprom.S0_LEVEL;                  // S0 .. base level
+		const int16_t rssi_dBm = BK4819_GetRSSI_dBm() + dBmCorrTable[gRxVfo->Band];
+		int s0_9 = gEeprom.S0_LEVEL - gEeprom.S9_LEVEL;
+		const uint8_t s_level = MIN(MAX((int32_t)(rssi_dBm - s0_dBm)*100 / (s0_9*100/9), 0), 9); // S0 - S9
+		printf("S_level: %d\n", s_level);
+		if (s_level > 3) {
+			printf("CW RECV\n");
+			//SYSTEM_DelayMs(20);
+			////BK4819_PlayTone(500, 0);
+			//SYSTEM_DelayMs(2);
+			//AUDIO_AudioPathOn();
+			//gEnableSpeaker = true;
+			//SYSTEM_DelayMs(60);
+			//BK4819_ExitTxMute();
+			//return;
+		}
+		//AUDIO_AudioPathOff();
+		//gEnableSpeaker = false;
 	}
 
 	FUNCTION_Select(function);
@@ -690,12 +754,14 @@ static void CheckRadioInterrupts(void)
 		if (interrupt_status_bits & BK4819_REG_02_SQUELCH_LOST)
 		{
 			g_SquelchLost = true;
+			printf("%s %d LOST = %d\n", __PRETTY_FUNCTION__, __LINE__, g_SquelchLost);
 			BK4819_ToggleGpioOut(BK4819_GPIO6_PIN2_GREEN, true);
 		}
 
 		if (interrupt_status_bits & BK4819_REG_02_SQUELCH_FOUND)
 		{
 			g_SquelchLost = false;
+			printf("%s %d FOUND = %d\n", __PRETTY_FUNCTION__, __LINE__, g_SquelchLost);
 			BK4819_ToggleGpioOut(BK4819_GPIO6_PIN2_GREEN, false);
 		}
 
@@ -1025,7 +1091,6 @@ static void CheckKeys(void)
 		// PTT pressed
 		boot_counter_10ms   = 0;
 		ProcessKey(KEY_PTT, true, false);
-		BK4819_TransmitTone(gEeprom.PLAY_SIDE_TONE, 440);
 	}
 
 // --------------------- OTHER KEYS ----------------------------

@@ -237,8 +237,9 @@ void ACTION_SwitchDemodul(void)
 
 	gTxVfo->Modulation++;
 
-	if(gTxVfo->Modulation == MODULATION_UKNOWN)
+	if(gTxVfo->Modulation == MODULATION_UKNOWN) {
 		gTxVfo->Modulation = MODULATION_FM;
+	}
 }
 
 

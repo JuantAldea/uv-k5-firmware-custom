@@ -897,7 +897,8 @@ void RADIO_SetModulation(ModulationMode_t modulation)
 
 	BK4819_SetRegValue(afDacGainRegSpec, 0xF);
 	BK4819_WriteRegister(BK4819_REG_3D, modulation == MODULATION_USB ? 0 : 0x2AAB);
-	BK4819_SetRegValue(afcDisableRegSpec, modulation != MODULATION_FM && modulation != MODULATION_CW);
+	//BK4819_SetRegValue(afcDisableRegSpec, modulation != MODULATION_FM && modulation != MODULATION_CW);
+	BK4819_SetRegValue(afcDisableRegSpec, modulation != MODULATION_FM);
 
 	RADIO_SetupAGC(modulation == MODULATION_AM, false);
 }
@@ -914,14 +915,12 @@ void RADIO_SetupAGC(bool listeningAM, bool disable)
 	if(!listeningAM) { // if not actively listening AM we don't need any AM specific regulation
 		BK4819_SetAGC(!disable);
 		BK4819_InitAGC(false);
-	}
-	else {
+	} else {
 #ifdef ENABLE_AM_FIX
 		if(gSetting_AM_fix) { // if AM fix active lock AGC so AM-fix can do it's job
 			BK4819_SetAGC(0);
 			AM_fix_enable(!disable);
-		}
-		else
+		} else
 #endif
 		{
 			BK4819_SetAGC(!disable);
@@ -1079,7 +1078,10 @@ void RADIO_SendEndOfTransmission(void)
 #endif
 
 	// send the CTCSS/DCS tail tone - allows the receivers to mute the usual FM squelch tail/crash
-	RADIO_EnableCxCSS();
+	if (gRxVfo->Modulation != MODULATION_CW) {
+		RADIO_EnableCxCSS();
+	}
+
 	RADIO_SetupRegisters(false);
 }
 

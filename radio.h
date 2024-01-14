@@ -67,7 +67,7 @@ typedef enum {
 #endif
 	MODULATION_CW,
 
-	MODULATION_UKNOWN = 0xFF,
+	MODULATION_UKNOWN,
 } ModulationMode_t;
 
 extern const char gModulationStr[MODULATION_UKNOWN][4];
