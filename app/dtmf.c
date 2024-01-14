@@ -17,13 +17,12 @@
  #ifdef ENABLE_DTMF
 
 #include <string.h>
-#include <stdio.h>   // NULL
-
-#include "app/chFrScanner.h"
+#include <stdio.h>
+#include "chFrScanner.h"
 #ifdef ENABLE_FMRADIO
-	#include "app/fm.h"
+	#include "fm.h"
 #endif
-#include "app/scanner.h"
+#include "scanner.h"
 #include "bsp/dp32g030/gpio.h"
 #include "audio.h"
 #include "driver/bk4819.h"
@@ -34,7 +33,9 @@
 #include "external/printf/printf.h"
 #include "misc.h"
 #include "settings.h"
-#include "ui/ui.h"
+#include "../ui/ui.h"
+#include "../ui/main.h"
+#include "../functions.h"
 
 char              gDTMF_String[15];
 
@@ -249,7 +250,34 @@ void DTMF_Reply(void)
 	BK4819_ExitDTMF_TX(false);
 }
 
+void DTMF_TimeSlice500ms(void)
+{
+	if (gDTMF_RX_live_timeout > 0) {
+#ifdef ENABLE_RSSI_BAR
+		if (center_line == CENTER_LINE_DTMF_DEC ||
+			center_line == CENTER_LINE_NONE)  // wait till the center line is free for us to use before timing out
+#endif
+		{
+			if (--gDTMF_RX_live_timeout == 0)
+			{
+				if (gDTMF_RX_live[0] != 0)
+				{
+					memset(gDTMF_RX_live, 0, sizeof(gDTMF_RX_live));
+					gUpdateDisplay   = true;
+				}
+			}
+		}
+
 #ifdef ENABLE_DTMF_CALLING
+		if (--gDTMF_RX_timeout == 0){
+			DTMF_clear_RX();
+		}
+#endif
+	}
+}
+
+#ifdef ENABLE_DTMF_CALLING
+
 void DTMF_clear_RX(void)
 {
 	gDTMF_RX_timeout = 0;
@@ -496,6 +524,36 @@ void DTMF_HandleRequest(void)
 
 	if (gDTMF_IsGroupCall) {
 		gDTMF_ReplyState = DTMF_REPLY_NONE;
+	}
+}
+
+void DTMF_Calling_TimeSlice500ms(void)
+{
+	if (gCurrentFunction != FUNCTION_TRANSMIT) {
+		if (gDTMF_DecodeRingCountdown_500ms > 0) {
+			// make "ring-ring" sound
+			gDTMF_DecodeRingCountdown_500ms--;
+			AUDIO_PlayBeep(BEEP_880HZ_200MS);
+		}
+	} else {
+		gDTMF_DecodeRingCountdown_500ms = 0;
+	}
+
+	if (gDTMF_CallState  != DTMF_CALL_STATE_NONE && gCurrentFunction != FUNCTION_TRANSMIT
+		&& gCurrentFunction != FUNCTION_RECEIVE && gDTMF_auto_reset_time_500ms > 0
+		&& --gDTMF_auto_reset_time_500ms == 0)
+	{
+		gUpdateDisplay  = true;
+		if (gDTMF_CallState == DTMF_CALL_STATE_RECEIVED && gEeprom.DTMF_auto_reset_time >= DTMF_HOLD_MAX) {
+			gDTMF_CallState = DTMF_CALL_STATE_RECEIVED_STAY;     // keep message on-screen till a key is pressed
+		} else {
+			gDTMF_CallState = DTMF_CALL_STATE_NONE;
+		}
+	}
+
+	if (gDTMF_IsTx && gDTMF_TxStopCountdown_500ms > 0 && --gDTMF_TxStopCountdown_500ms == 0) {
+		gDTMF_IsTx     = false;
+		gUpdateDisplay = true;
 	}
 }
 

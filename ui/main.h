@@ -17,6 +17,8 @@
 #ifndef UI_MAIN_H
 #define UI_MAIN_H
 
+#include <stdint.h>
+
 enum center_line_t {
 	CENTER_LINE_NONE = 0,
 	CENTER_LINE_IN_USE,

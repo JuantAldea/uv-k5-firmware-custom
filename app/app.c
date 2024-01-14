@@ -542,36 +542,79 @@ static void DualwatchAlternate(void)
 {
 #ifdef ENABLE_NOAA
 	if (gIsNoaaMode) {
-		if (!IS_NOAA_CHANNEL(gEeprom.ScreenChannel[0]) || !IS_NOAA_CHANNEL(gEeprom.ScreenChannel[1]))
+		if (!IS_NOAA_CHANNEL(gEeprom.ScreenChannel[0]) || !IS_NOAA_CHANNEL(gEeprom.ScreenChannel[1])) {
 			gEeprom.RX_VFO = (gEeprom.RX_VFO + 1) & 1;
-		else
+		} else {
 			gEeprom.RX_VFO = 0;
+		}
 
 		gRxVfo = &gEeprom.VfoInfo[gEeprom.RX_VFO];
+		gDualWatchCountdown_10ms = dual_watch_count_noaa_10ms
 
-		if (IS_NOAA_CHANNEL(gEeprom.VfoInfo[0].CHANNEL_SAVE))
+		if (IS_NOAA_CHANNEL(gEeprom.VfoInfo[0].CHANNEL_SAVE)) {
 			NOAA_IncreaseChannel();
+		}
 	} else
 #endif
 	{	// toggle between VFO's
 		gEeprom.RX_VFO = !gEeprom.RX_VFO;
 		gRxVfo         = &gEeprom.VfoInfo[gEeprom.RX_VFO];
+		gDualWatchCountdown_10ms = dual_watch_count_toggle_10ms;
 
-		if (!gDualWatchActive)
-		{	// let the user see DW is active
+		if (!gDualWatchActive) {
+			// let the user see DW is active
 			gDualWatchActive = true;
 			gUpdateStatus    = true;
 		}
 	}
 
 	RADIO_SetupRegisters(false);
-
-	#ifdef ENABLE_NOAA
-		gDualWatchCountdown_10ms = gIsNoaaMode ? dual_watch_count_noaa_10ms : dual_watch_count_toggle_10ms;
-	#else
-		gDualWatchCountdown_10ms = dual_watch_count_toggle_10ms;
-	#endif
 }
+
+#ifdef ENABLE_DTMF
+static void HandleDTMFTone(void)
+{
+	const char c = DTMF_GetCharacter(BK4819_GetDTMF_5TONE_Code()); // save the RX'ed DTMF character
+	if (c == 0xff) {
+		return;
+	}
+
+	if (gCurrentFunction == FUNCTION_TRANSMIT) {
+		return;
+	}
+
+	if (gSetting_live_DTMF_decoder) {
+		size_t len = strlen(gDTMF_RX_live);
+		if (len >= sizeof(gDTMF_RX_live) - 1) { // make room
+			memmove(&gDTMF_RX_live[0], &gDTMF_RX_live[1], sizeof(gDTMF_RX_live) - 1);
+			len--;
+		}
+
+		gDTMF_RX_live[len++]  = c;
+		gDTMF_RX_live[len]    = 0;
+		gDTMF_RX_live_timeout = DTMF_RX_live_timeout_500ms;  // time till we delete it
+		gUpdateDisplay        = true;
+	}
+
+#ifdef ENABLE_DTMF_CALLING
+	if (gRxVfo->DTMF_DECODING_ENABLE || gSetting_KILLED) {
+		if (gDTMF_RX_index >= sizeof(gDTMF_RX) - 1) { // make room
+			memmove(&gDTMF_RX[0], &gDTMF_RX[1], sizeof(gDTMF_RX) - 1);
+			gDTMF_RX_index--;
+		}
+
+		gDTMF_RX[gDTMF_RX_index++] = c;
+		gDTMF_RX[gDTMF_RX_index]   = 0;
+		gDTMF_RX_timeout           = DTMF_RX_timeout_500ms;  // time till we delete it
+		gDTMF_RX_pending           = true;
+
+		SYSTEM_DelayMs(3);//fix DTMF not reply@Yurisu
+		DTMF_HandleRequest();
+	}
+#endif
+}
+#endif
+
 
 static void CheckRadioInterrupts(void)
 {
@@ -616,57 +659,30 @@ static void CheckRadioInterrupts(void)
 //			g_CTCSS_Lost = true;
 #ifdef ENABLE_DTMF
 		if (interrupts.dtmf5ToneFound) {
-			const char c = DTMF_GetCharacter(BK4819_GetDTMF_5TONE_Code()); // save the RX'ed DTMF character
-			if (c != 0xff) {
-				if (gCurrentFunction != FUNCTION_TRANSMIT) {
-					if (gSetting_live_DTMF_decoder) {
-						size_t len = strlen(gDTMF_RX_live);
-						if (len >= sizeof(gDTMF_RX_live) - 1) { // make room
-							memmove(&gDTMF_RX_live[0], &gDTMF_RX_live[1], sizeof(gDTMF_RX_live) - 1);
-							len--;
-						}
-						gDTMF_RX_live[len++]  = c;
-						gDTMF_RX_live[len]    = 0;
-						gDTMF_RX_live_timeout = DTMF_RX_live_timeout_500ms;  // time till we delete it
-						gUpdateDisplay        = true;
-					}
-
-#ifdef ENABLE_DTMF_CALLING
-					if (gRxVfo->DTMF_DECODING_ENABLE || gSetting_KILLED) {
-						if (gDTMF_RX_index >= sizeof(gDTMF_RX) - 1) { // make room
-							memmove(&gDTMF_RX[0], &gDTMF_RX[1], sizeof(gDTMF_RX) - 1);
-							gDTMF_RX_index--;
-						}
-						gDTMF_RX[gDTMF_RX_index++] = c;
-						gDTMF_RX[gDTMF_RX_index]   = 0;
-						gDTMF_RX_timeout           = DTMF_RX_timeout_500ms;  // time till we delete it
-						gDTMF_RX_pending           = true;
-						
-						SYSTEM_DelayMs(3);//fix DTMF not reply@Yurisu
-						DTMF_HandleRequest();
-					}
-#endif
-				}
-			}
+			HandleDTMFTone();
 		}
 #endif
 
-		if (interrupts.cssTailFound)
+		if (interrupts.cssTailFound) {
 			g_CxCSS_TAIL_Found = true;
+		}
 
 		if (interrupts.cdcssLost) {
 			g_CDCSS_Lost = true;
 			gCDCSSCodeType = BK4819_GetCDCSSCodeType();
 		}
 
-		if (interrupts.cdcssFound)
+		if (interrupts.cdcssFound) {
 			g_CDCSS_Lost = false;
+		}
 
-		if (interrupts.ctcssLost)
+		if (interrupts.ctcssLost) {
 			g_CTCSS_Lost = true;
+		}
 
-		if (interrupts.ctcssFound)
+		if (interrupts.ctcssFound) {
 			g_CTCSS_Lost = false;
+		}
 
 #ifdef ENABLE_VOX
 		if (interrupts.voxLost) {
@@ -1310,32 +1326,12 @@ void APP_TimeSlice500ms(void)
 	}
 
 #ifdef ENABLE_DTMF
-	if (gDTMF_RX_live_timeout > 0)
-	{
-		#ifdef ENABLE_RSSI_BAR
-			if (center_line == CENTER_LINE_DTMF_DEC ||
-				center_line == CENTER_LINE_NONE)  // wait till the center line is free for us to use before timing out
-		#endif
-		{
-			if (--gDTMF_RX_live_timeout == 0)
-			{
-				if (gDTMF_RX_live[0] != 0)
-				{
-					memset(gDTMF_RX_live, 0, sizeof(gDTMF_RX_live));
-					gUpdateDisplay   = true;
-				}
-			}
-		}
-	}
+	DTMF_TimeSlice500ms();
 #endif
 
-	if (gMenuCountdown > 0 && --gMenuCountdown == 0)
+	if (gMenuCountdown > 0 && --gMenuCountdown == 0) {
 		exit_menu = (gScreenToDisplay == DISPLAY_MENU);	// exit menu mode
-
-#ifdef ENABLE_DTMF_CALLING
-	if (gDTMF_RX_timeout > 0 && --gDTMF_RX_timeout == 0)
-		DTMF_clear_RX();
-#endif
+	}
 
 	// Skipped authentic device check
 
@@ -1490,35 +1486,12 @@ void APP_TimeSlice500ms(void)
 	BATTERY_TimeSlice500ms();
 	SCANNER_TimeSlice500ms();
 	UI_MAIN_TimeSlice500ms();
-
 #ifdef ENABLE_DTMF_CALLING
-	if (gCurrentFunction != FUNCTION_TRANSMIT) {
-		if (gDTMF_DecodeRingCountdown_500ms > 0) {
-			// make "ring-ring" sound
-			gDTMF_DecodeRingCountdown_500ms--;
-			AUDIO_PlayBeep(BEEP_880HZ_200MS);
-		}
-	} else {
-		gDTMF_DecodeRingCountdown_500ms = 0;
-	}
-
-	if (gDTMF_CallState  != DTMF_CALL_STATE_NONE && gCurrentFunction != FUNCTION_TRANSMIT
-		&& gCurrentFunction != FUNCTION_RECEIVE && gDTMF_auto_reset_time_500ms > 0
-		&& --gDTMF_auto_reset_time_500ms == 0)
-	{
-		gUpdateDisplay  = true;
-		if (gDTMF_CallState == DTMF_CALL_STATE_RECEIVED && gEeprom.DTMF_auto_reset_time >= DTMF_HOLD_MAX) {
-			gDTMF_CallState = DTMF_CALL_STATE_RECEIVED_STAY;     // keep message on-screen till a key is pressed
-		} else {
-			gDTMF_CallState = DTMF_CALL_STATE_NONE;
-		}
-	}
-
-	if (gDTMF_IsTx && gDTMF_TxStopCountdown_500ms > 0 && --gDTMF_TxStopCountdown_500ms == 0) {
-		gDTMF_IsTx     = false;
-		gUpdateDisplay = true;
-	}
+	DTMF_Calling_TimeSlice500ms();
 #endif
+
+
+
 }
 
 #if defined(ENABLE_ALARM) || defined(ENABLE_TX1750)
@@ -1709,7 +1682,7 @@ static void ProcessKey(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 		}
 	}
 
-	if (gWasFKeyPressed && (Key == KEY_PTT || Key == KEY_EXIT || Key == KEY_SIDE1 || Key == KEY_SIDE2)) { 
+	if (gWasFKeyPressed && (Key == KEY_PTT || Key == KEY_EXIT || Key == KEY_SIDE1 || Key == KEY_SIDE2)) {
 		// cancel the F-key
 		gWasFKeyPressed = false;
 		gUpdateStatus   = true;

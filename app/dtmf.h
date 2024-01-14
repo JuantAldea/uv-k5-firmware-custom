@@ -82,6 +82,9 @@ extern uint8_t           gDTMF_RX_live_timeout;
 
 extern DTMF_ReplyState_t gDTMF_ReplyState;
 
+extern const uint8_t         DTMF_RX_live_timeout_500ms;
+extern bool                  gSetting_live_DTMF_decoder;
+
 bool DTMF_ValidateCodes(char *pCode, const unsigned int size);
 char DTMF_GetCharacter(const unsigned int code);
 void DTMF_clear_input_box(void);
@@ -89,8 +92,14 @@ void DTMF_StringAppend(const char code);
 void DTMF_StringDeleteOne();
 void DTMF_Reply(void);
 void DTMF_SendEndOfTransmission(void);
+void DTMF_TimeSlice500ms(void);
 
 #ifdef ENABLE_DTMF_CALLING
+
+extern const uint8_t         DTMF_RX_timeout_500ms;
+extern const uint8_t         DTMF_decode_ring_countdown_500ms;
+extern const uint8_t         DTMF_txstop_countdown_500ms;
+extern bool                  gSetting_KILLED;
 
 extern char              gDTMF_RX[17];
 extern uint8_t           gDTMF_RX_index;
@@ -116,6 +125,7 @@ DTMF_CallMode_t DTMF_CheckGroupCall(const char *pMsg, const unsigned int size);
 bool DTMF_GetContact(const int Index, char *pContact);
 bool DTMF_FindContact(const char *pContact, char *pResult);
 void DTMF_HandleRequest(void);
+void DTMF_Calling_TimeSlice500ms(void);
 
 #endif
 

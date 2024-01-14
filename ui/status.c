@@ -34,6 +34,10 @@
 #include "ui/ui.h"
 #include "ui/status.h"
 
+#ifdef ENABLE_DTMF_CALLING
+	#include "../app/dtmf.h"
+#endif
+
 void UI_DisplayStatus()
 {
 	gUpdateStatus = false;
