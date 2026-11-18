@@ -42,6 +42,15 @@ ENABLE_BYP_RAW_DEMODULATORS     ?= 0
 ENABLE_BLMIN_TMP_OFF            ?= 0
 ENABLE_SCAN_RANGES              ?= 1
 ENABLE_APRS                     ?= 1
+# Receive, decode and display other stations' APRS traffic (and the matching
+# auto-ack of numbered messages addressed to us). On by default - a normal
+# APRS build is meant to be a real two-way station. Off automatically under
+# ENABLE_RS41 below: ~2.9KB (APRS_DecodeCapture + the frame/position parsers
+# and display code it alone reaches) that build can't spare, and it isn't
+# needed for the stated job of relaying a decoded RS41 fix out as a beacon -
+# that only ever calls the TX path. Beaconing, one-way message *send*, and
+# the PC/web "aprs_pc.py" tooling still work with this off.
+ENABLE_APRS_RX                  ?= 1
 # Fill-in digipeater. OFF for shipped images on purpose: this radio transmits
 # FFSK 1200/1800, not Bell 202, so repeats are decodable by software modems but
 # not by hardware TNCs — fine for a closed group, not for public infrastructure.
@@ -67,6 +76,50 @@ ifeq ($(ENABLE_APRS_DIGI),1)
     # useful thing on a radio dedicated to packet. Even then it only fits the
     # all-band image; ENABLE_AMATEUR_BAND_ONLY=1 still overflows by ~200 bytes.
     ENABLE_AM_FIX := 0
+endif
+# Receive and decode RS41 radiosonde telemetry (400-406 MHz GFSK) on its own
+# full-screen app, entered with KEY_9, plus a PTT-armed auto-relay of decoded
+# fixes out as an APRS Item (see APRS_BeaconItem in aprs_minimal.c). Off by
+# default. Fits the amateur-band image with 100 bytes to spare, measured
+# 2026-11-18 with arm-none-eabi-gcc 14.2.0 (f4hwn.bin = 61340 / 61440 bytes).
+# Getting here took, in order: cutting the stock flags below (~1.6KB);
+# rewriting rs41.c's ECEF->lat/lon/heading math to pure integer/fixed-point -
+# isqrt64 + a 22-iteration CORDIC atan2, see rs41.c - specifically to avoid
+# pulling in the Cortex-M0 software-float runtime (~3.2KB); dropping
+# ENABLE_APRS_RX plus RS41's own QR screen below (~4.3KB combined); the relay
+# feature itself plus its on-screen armed indicator (~130 bytes net, after
+# trimming the CORDIC table from 28 to 22 iterations to pay for it - see the
+# CORDIC_ITERS comment in rs41.c); and fixing a real pre-existing bug that
+# only shows up with ENABLE_BIG_FREQ=0 (ui/main.c - `att` was read outside
+# the scope it was declared in; harmless until that macro removed the only
+# branch that happened to declare it first) rather than just avoiding it -
+# 124 bytes, for free, with no feature cost beyond the large frequency font.
+#
+# 100 bytes is still thin, and only measured with arm-none-eabi-gcc 14.2.0;
+# the toolchain this project's README actually recommends is 10.3.1, which
+# the same README says can produce a LARGER binary. Build and check
+# `arm-none-eabi-size` yourself before trusting this.
+# RS41's "scan to open geo: link" QR-code screen (KEY_9 inside the app).
+# Off by default even when ENABLE_RS41=1 - the ~1.3KB from miniqr.c plus the
+# render code in radiosonde.c is real flash the amateur-band image doesn't
+# have to spare (see the ENABLE_RS41 comment above).
+ENABLE_RS41_QR                  ?= 0
+ENABLE_RS41                     ?= 0
+ifeq ($(ENABLE_RS41),1)
+    ENABLE_AM_FIX := 0
+    ENABLE_RSSI_BAR := 0
+    ENABLE_UART_RC := 0
+    ENABLE_SCAN_RANGES := 0
+    ENABLE_FEAT_F4HWN_NARROWER := 0
+    ENABLE_COPY_CHAN_TO_VFO := 0
+    ENABLE_SQUELCH_MORE_SENSITIVE := 0
+    ENABLE_FEAT_F4HWN_CTR := 0
+    ENABLE_FLASHLIGHT := 0
+    ENABLE_WIDE_RX := 0
+    ENABLE_FEAT_F4HWN_CA := 0
+    ENABLE_FEAT_F4HWN_INV := 0
+    ENABLE_APRS_RX := 0
+    ENABLE_BIG_FREQ := 0
 endif
 ifeq ($(ENABLE_AMATEUR_BAND_ONLY),1)
     # The amateur image is 76 bytes short of holding the RdMsg message slot
@@ -220,6 +273,13 @@ endif
 ifeq ($(ENABLE_APRS),1)
 	OBJS += app/aprs_minimal.o
 	OBJS += driver/crc.o
+endif
+ifeq ($(ENABLE_RS41),1)
+	OBJS += app/rs41.o
+	OBJS += app/radiosonde.o
+endif
+ifeq ($(ENABLE_RS41_QR),1)
+	OBJS += app/miniqr.o
 endif
 OBJS += audio.o
 OBJS += bitmaps.o
@@ -438,6 +498,9 @@ endif
 ifeq ($(ENABLE_APRS),1)
 	CFLAGS  += -DENABLE_APRS
 endif
+ifeq ($(ENABLE_APRS_RX),1)
+	CFLAGS  += -DENABLE_APRS_RX
+endif
 ifeq ($(ENABLE_APRS_DIGI),1)
 	CFLAGS  += -DENABLE_APRS_DIGI
 endif
@@ -446,6 +509,12 @@ ifeq ($(ENABLE_MIC_PROBE),1)
 endif
 ifeq ($(ENABLE_APRS_ACOUSTIC),1)
 	CFLAGS  += -DENABLE_APRS_ACOUSTIC
+endif
+ifeq ($(ENABLE_RS41),1)
+	CFLAGS  += -DENABLE_RS41
+endif
+ifeq ($(ENABLE_RS41_QR),1)
+	CFLAGS  += -DENABLE_RS41_QR
 endif
 ifeq ($(ENABLE_AM_FIX_SHOW_DATA),1)
 	CFLAGS  += -DENABLE_AM_FIX_SHOW_DATA

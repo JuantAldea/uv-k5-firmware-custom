@@ -886,12 +886,15 @@ void UI_DisplayMain(void)
                 #endif
                 uint8_t countList = 0;
                 uint8_t shiftList = 0;
+                // Hoisted out of the "not excluded" block below: it's just a
+                // const array read (safe unconditionally), and the compander
+                // symbol code further down - compiled in only when
+                // ENABLE_BIG_FREQ=0 - needs it in scope here too.
+                const ChannelAttributes_t att = gMR_ChannelAttributes[gEeprom.ScreenChannel[vfo_num]];
 
                 if(gMR_ChannelExclude[gEeprom.ScreenChannel[vfo_num]] == false)
                 {
                     // show the scan list assigment symbols
-                    const ChannelAttributes_t att = gMR_ChannelAttributes[gEeprom.ScreenChannel[vfo_num]];
-
                     countList = att.scanlist1 + att.scanlist2 + att.scanlist3;
 
                     if(countList == 0)

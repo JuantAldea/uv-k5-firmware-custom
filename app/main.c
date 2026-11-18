@@ -27,6 +27,9 @@
 #ifdef ENABLE_APRS
     #include "app/aprs_minimal.h"
 #endif
+#ifdef ENABLE_RS41
+    #include "app/radiosonde.h"
+#endif
 #include "app/main.h"
 #include "app/scanner.h"
 
@@ -266,6 +269,10 @@ static void processFKeyFunction(const KEY_Code_t Key, const bool beep)
             break;
 
         case KEY_9:
+#ifdef ENABLE_RS41
+            APP_RunRadiosonde();
+            gRequestDisplayScreen = DISPLAY_MAIN;
+#else
             if (RADIO_CheckValidChannel(gEeprom.CHAN_1_CALL, false, 0)) {
                 gEeprom.MrChannel[Vfo]     = gEeprom.CHAN_1_CALL;
                 gEeprom.ScreenChannel[Vfo] = gEeprom.CHAN_1_CALL;
@@ -281,6 +288,7 @@ static void processFKeyFunction(const KEY_Code_t Key, const bool beep)
 
             if (beep)
                 gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
+#endif
             break;
 
 #ifdef ENABLE_FEAT_F4HWN // Set Squelch F + UP or Down and Step F + SIDE1 or F + SIDE2

@@ -38,6 +38,12 @@ void APRS_ResetBeaconTimer(void);
 // Beacon a specific position in micro-degrees (UART 0x0704 / live GPS)
 void APRS_BeaconAt(int32_t lat_udeg, int32_t lon_udeg);
 
+#ifdef ENABLE_RS41
+// Report a third party's position (name, up to 9 chars) as an APRS Item -
+// used to relay a decoded radiosonde fix without claiming it as our own.
+void APRS_BeaconItem(const char *name, int32_t lat_udeg, int32_t lon_udeg, int32_t alt_cm);
+#endif
+
 // Main APRS task (called from app loop)
 void APRS_Task(void);
 void APRS_TxCooldown(void);   // runs even while listening is OFF (TX needs no RX)

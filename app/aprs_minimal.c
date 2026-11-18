@@ -239,9 +239,11 @@ char gAPRS_MsgText[31];
 #define APRS_ACK_SEQ_MAX  5u   // spec allows up to 5 characters
 static uint8_t gAPRS_MsgSeq;
 bool gAPRS_MsgDirty;        // set when MsgTo/Msg changes; gates the {nn bump
+#ifdef ENABLE_APRS_RX
 static char    gAPRS_AckTo[10];
 static char    gAPRS_AckSeq[APRS_ACK_SEQ_MAX + 1];
 static bool    gAPRS_AckPending;
+#endif
 
 // The radio must not transmit until the operator has set a real callsign.
 // Empty or the "N0CALL" placeholder counts as unconfigured.
@@ -364,14 +366,17 @@ static char gAPRS_MsgLast[sizeof(gAPRS_RxDisplay)];
 
 static bool     gRxArmed;
 static bool     gRxCapturing;
+#ifdef ENABLE_APRS_RX
 static uint8_t  gRxStuckTicks;
 static uint16_t gRxCount;
 static uint8_t  gRxFrame[80];
+#endif
 
 #define APRS_RX_IRQ_MASK (BK4819_REG_02_FSK_RX_FINISHED | \
                           BK4819_REG_02_FSK_FIFO_ALMOST_FULL | \
                           BK4819_REG_02_FSK_RX_SYNC)
 
+#ifdef ENABLE_APRS_RX
 static void APRS_RxArm(void)
 {
     BK4819_WriteRegister(BK4819_REG_70, (1u << 15) | (1u << 7) | (96u << 0));
@@ -411,6 +416,7 @@ static void APRS_RxDrainFifo(uint8_t words)
         if (gRxCount < HDLC_BUF_SIZE) gHdlcBuf[gRxCount++] = (uint8_t)(w >> 8);
     }
 }
+#endif // ENABLE_APRS_RX
 
 // Expire the RX packet display / message overlay. When a message times out we
 // also drop the sticky flag so UI_DisplayMain redraws VFO B. Called from both
@@ -465,6 +471,7 @@ void APRS_StopListening(void)
 // Mic-E and compressed decoding follow the APRS 1.01 spec, cross-checked
 // against F4JTV/aprs_decoder.
 
+#ifdef ENABLE_APRS_RX
 static uint8_t MIN100_TO_MICRO(uint32_t deg, uint32_t min100, int32_t *out)
 {
     // deg + (min100 / 100) minutes -> micro-degrees. 1' = 1000000/60 udeg.
@@ -587,6 +594,10 @@ static uint8_t APRS_ParseCompressed(const uint8_t *p, uint16_t len, int32_t *lat
     return 1;
 }
 
+#endif // ENABLE_APRS_RX
+
+// Shared by the always-on "Loc" menu display (APRS_FormatLatLon) and, when
+// RX is enabled, the received-packet position display.
 static char *APRS_FmtCoord(char *p, int32_t micro, char pos, char neg)
 {
     char hemi = pos;
@@ -608,6 +619,7 @@ static char *APRS_FmtCoord(char *p, int32_t micro, char pos, char neg)
     return p;
 }
 
+#ifdef ENABLE_APRS_RX
 // ---- Great-circle-ish distance from my saved location (integer only) --------
 // Equirectangular approximation: good to well under 1% at handheld/VHF ranges,
 // and it needs no floating point. Coordinates are micro-degrees.
@@ -697,9 +709,11 @@ static char *APRS_FmtDistance(char *p, uint32_t metres)
     *p++ = 'm';
     return p;
 }
+#endif // ENABLE_APRS_RX
 
 // Push a decoded packet out the UART as a plain "APRS:<text>\r\n" line so a PC
 // can monitor traffic (see utils/aprs_pc.py). No-op if UART is disabled.
+#ifdef ENABLE_APRS_RX
 static void APRS_EmitMonitor(void)
 {
 #ifdef ENABLE_UART
@@ -732,6 +746,8 @@ static void APRS_EmitRaw(const uint8_t *frame, uint16_t len)
 #endif
 }
 
+#endif // ENABLE_APRS_RX
+
 // "41.15N\n27.84E" for the Loc menu display (two lines)
 void APRS_FormatLatLon(char *out)
 {
@@ -741,6 +757,7 @@ void APRS_FormatLatLon(char *out)
     *p = 0;
 }
 
+#ifdef ENABLE_APRS_RX
 static void APRS_ShowFrame(const uint8_t *frame, uint16_t len)
 {
     APRS_EmitRaw(frame, len);  // full raw frame to UART for PC/web decode
@@ -1046,9 +1063,11 @@ static bool APRS_DecodeCapture(void)
     }
     return false;
 }
+#endif // ENABLE_APRS_RX
 
 void APRS_HandleRxInterrupts(uint16_t interrupt_bits)
 {
+#ifdef ENABLE_APRS_RX
     if (!gRxArmed)
         return;
 
@@ -1068,6 +1087,9 @@ void APRS_HandleRxInterrupts(uint16_t interrupt_bits)
         APRS_DecodeCapture();
         APRS_RxArm();  // clear FIFO and wait for the next packet
     }
+#else
+    (void)interrupt_bits; // RX decode/display dropped to make room for ENABLE_RS41
+#endif
 }
 
 // Convert callsign to AX.25 address format
@@ -1291,6 +1313,54 @@ void APRS_BeaconAt(int32_t lat_udeg, int32_t lon_udeg)
     gAPRSState = APRS_STATE_WAITING;
 }
 
+#ifdef ENABLE_RS41
+// Report a third party's position (e.g. a tracked radiosonde) as an APRS
+// Item, not a plain position beacon: this station isn't physically at
+// (lat,lon), so claiming "!" (my position) would be wrong. An Item needs no
+// timestamp (unlike the similar Object Report), which matters here because
+// RS41's GPS_TIME block gives hour/min/sec but no day-of-month to build one
+// from. Symbol is the primary-table balloon ('O'); altitude rides in the
+// standard "/A=NNNNNN" (feet) comment extension.
+void APRS_BeaconItem(const char *name, int32_t lat_udeg, int32_t lon_udeg, int32_t alt_cm)
+{
+    if (gAPRSState != APRS_STATE_IDLE || !APRS_Configured())
+        return;
+    gAPRSState = APRS_STATE_TRANSMITTING;
+    APRS_StopListening();
+
+    uint8_t frame[7*4 + 2 + 1 + 9 + 1 + 21 + 9 + 2];
+    uint16_t idx = APRS_BuildHeader(frame);
+
+    frame[idx++] = ')';
+    for (uint8_t i = 0; i < 9 && name[i]; i++)
+        frame[idx++] = (uint8_t)name[i];
+    frame[idx++] = '!';
+
+    int32_t v; char hemi;
+    v = lat_udeg; hemi = 'N';
+    if (v < 0) { v = -v; hemi = 'S'; }
+    idx += APRS_PosDigits(&frame[idx], (uint32_t)v, 0);
+    frame[idx++] = (uint8_t)hemi;
+    frame[idx++] = '/';  // primary symbol table
+    v = lon_udeg; hemi = 'E';
+    if (v < 0) { v = -v; hemi = 'W'; }
+    idx += APRS_PosDigits(&frame[idx], (uint32_t)v, 1);
+    frame[idx++] = (uint8_t)hemi;
+    frame[idx++] = 'O';  // balloon
+
+    // /A=NNNNNN - altitude in feet, clamped to the field's 6 digits.
+    int64_t feet = ((int64_t)alt_cm * 32808) / 100000;
+    if (feet < 0) feet = 0;
+    if (feet > 999999) feet = 999999;
+    frame[idx++] = '/'; frame[idx++] = 'A'; frame[idx++] = '=';
+    for (int32_t d = 100000; d >= 1; d /= 10)
+        frame[idx++] = (uint8_t)('0' + (feet / d) % 10);
+
+    APRS_TxFrame(frame, idx);
+    gAPRSState = APRS_STATE_WAITING;
+}
+#endif // ENABLE_RS41
+
 // ":ADDRESSEE:text" - addressee is always padded to exactly 9 characters, as
 // every decoder (and the APRS spec) requires. Shared by the menu "Send" item
 // and the automatic acknowledgement.
@@ -1347,6 +1417,7 @@ void APRS_SendMessage(void)
     gAPRSState = APRS_STATE_WAITING;
 }
 
+#ifdef ENABLE_APRS_RX
 // Acknowledge a received numbered message: ":SENDER   :ackNN"
 static void APRS_SendAck(void)
 {
@@ -1362,6 +1433,7 @@ static void APRS_SendAck(void)
     APRS_TxMessage(gAPRS_AckTo, text);
     gAPRSState = APRS_STATE_WAITING;
 }
+#endif // ENABLE_APRS_RX
 
 // Main APRS task (called from the 500ms app loop while APRS is ON)
 void APRS_Task(void)
@@ -1389,6 +1461,7 @@ void APRS_Task(void)
             return;
         }
 #endif
+#ifdef ENABLE_APRS_RX
         // Acknowledge a numbered message addressed to us (queued by the decoder).
         if (gAPRS_AckPending) {
             gAPRS_AckPending = false;
@@ -1397,12 +1470,14 @@ void APRS_Task(void)
                 return;
             }
         }
+#endif
         // Automatic position beacon at the configured interval (keep-alive).
         if (gBeaconCountdown_500ms > 0 && --gBeaconCountdown_500ms == 0) {
             gBeaconCountdown_500ms = (uint16_t)gEeprom.APRS_INTERVAL * 120u;
             APRS_TransmitNow();  // -> WAITING; RX re-arms after the cooldown
             return;
         }
+#ifdef ENABLE_APRS_RX
         if (!gRxArmed) {
             APRS_RxArm();
         } else if (gRxCapturing && ++gRxStuckTicks > 2) {
@@ -1410,6 +1485,7 @@ void APRS_Task(void)
             APRS_DecodeCapture();
             APRS_RxArm();
         }
+#endif
     }
 
     if (gRxArmed) {
