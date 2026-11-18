@@ -510,6 +510,27 @@ static bool Sonde_HandleKeys(void)
             gSondeApp.mode = SONDE_MODE_QR;
             gSondeApp.timeout_frames = 0;
             break;
+#elif defined(ENABLE_APRS) && defined(ENABLE_RS41_RELAY) && defined(ENABLE_RS41_RELAY_TEST)
+        case KEY_9:
+            // Dev/test aid - see the ENABLE_RS41_RELAY_TEST comment in the
+            // Makefile. Deliberate one-shot action: fires immediately like
+            // the stock firmware's own "Send"/"BEACON" menu items, not
+            // gated by relay_armed, but still respects the cooldown.
+            if (gSondeApp.relay_cooldown == 0 && APRS_Configured()) {
+                strcpy(gSondeApp.decoder.data.sonde_id, "TEST0001");
+                gSondeApp.decoder.data.lat_1e6 = 45000000;   // 45.000000 N
+                gSondeApp.decoder.data.lon_1e6 = -93000000;  // 93.000000 W
+                gSondeApp.decoder.data.alt_cm  = 1000000;    // 10000.00 m
+                gSondeApp.decoder.data.valid   = true;
+                APRS_BeaconItem(gSondeApp.decoder.data.sonde_id,
+                                 gSondeApp.decoder.data.lat_1e6,
+                                 gSondeApp.decoder.data.lon_1e6,
+                                 gSondeApp.decoder.data.alt_cm);
+                gSondeApp.relay_cooldown = 30;
+                Sonde_SetupReceiver(gSondeApp.frequency);
+                RS41_Reset(&gSondeApp.decoder);
+            }
+            break;
 #endif
 
         case KEY_MENU:

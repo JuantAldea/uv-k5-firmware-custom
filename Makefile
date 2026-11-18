@@ -136,6 +136,27 @@ ENABLE_RS41_QR                  ?= 0
 # receiving RS41 telemetry needs no licence, but transmitting it over APRS
 # does, so this lets an unlicensed listener leave the transmit path out
 # entirely rather than just trusting the PTT-armed gate never to fire.
+# Dev/test aid: KEY_9 injects a fixed, obviously-fake fix (sonde ID
+# "TEST0001", 45.000000N/93.000000W, 10000.00m) straight into the decoder's
+# output and relays it immediately - bypassing the PTT-armed gate and the
+# 30s cooldown (it's a deliberate one-shot action, like the stock firmware's
+# own menu "Send"/"BEACON" items, not an automatic transmission) - so the
+# whole decode->relay->APRS pipeline can be verified without a real RS41
+# signal. Still requires a real callsign (APRS_Configured()); still sets the
+# cooldown afterward so repeated presses can't spam the channel. Off by
+# default. NEVER SHIP A BUILD WITH THIS ON - this is for bench-testing this
+# firmware itself, not for use in the field. Needs ENABLE_RS41_RELAY=1, and
+# takes over KEY_9 from ENABLE_RS41_QR if both are somehow on (QR wins).
+#
+# `ENABLE_RS41=1 ENABLE_RS41_RELAY_TEST=1` alone overflows by 148 bytes on
+# gcc 15.2.1 - the normal build already has zero margin (see the
+# ENABLE_RS41_RELAY comment above), and this adds real code. Pair it with a
+# temporary trade to actually build it, e.g. `ENABLE_KEEP_MEM_NAME=0` (saves
+# 12 bytes here, not enough alone - still 136 over); there was no further
+# free win left to find as of 2026-11-18. This is a bench-test config, not a
+# shipped one, so trading away something else just for the test session is
+# reasonable - re-measure with `arm-none-eabi-size` either way.
+ENABLE_RS41_RELAY_TEST          ?= 0
 ENABLE_RS41_RELAY               ?= 0
 ENABLE_RS41                     ?= 0
 ifeq ($(ENABLE_RS41),1)
@@ -553,6 +574,9 @@ ifeq ($(ENABLE_RS41),1)
 endif
 ifeq ($(ENABLE_RS41_RELAY),1)
 	CFLAGS  += -DENABLE_RS41_RELAY
+endif
+ifeq ($(ENABLE_RS41_RELAY_TEST),1)
+	CFLAGS  += -DENABLE_RS41_RELAY_TEST
 endif
 ifeq ($(ENABLE_RS41_QR),1)
 	CFLAGS  += -DENABLE_RS41_QR
