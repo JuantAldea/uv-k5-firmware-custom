@@ -170,6 +170,13 @@ Under `utils/`:
   ```bash
   cc -Wall -o /tmp/hdlc_test utils/aprs_hdlc_test.c && /tmp/hdlc_test
   ```
+- **`rs41_test.c`** — unlike the above, links `app/rs41.c` itself (it has no
+  MCU dependencies) rather than copying it. Builds a byte-correct RS41 test
+  frame (real sync header, STATUS/GPS_TIME/GPS_POS blocks with correct CRC16
+  and XOR scrambling) and feeds it through the real decoder bit-by-bit:
+  ```bash
+  cc -Wall -o /tmp/rs41_test utils/rs41_test.c app/rs41.c -lm && /tmp/rs41_test
+  ```
 
 ## Documentation
 
