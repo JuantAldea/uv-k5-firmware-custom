@@ -99,14 +99,18 @@ static void Sonde_DrawStatusBar(void) {
     UI_PrintStringSmallBufferNormal("SONDE", gStatusLine);
 #endif
 
-    // History Bar (Center)
+    // History Bar (Center) - offset 42, not 36: the title can be "SONDE*"
+    // (6 chars at 7px/char = columns 1-42), and this font's own 1px lead-in
+    // puts its first glyph at buffer+1, so 36 landed the history bar's first
+    // character directly on top of the armed indicator's asterisk, erasing
+    // it on every render once a non-space char reached that history slot.
     char hstr[12];
     uint8_t ptr = gSondeApp.history_ptr;
     for (int i = 0; i < 8; i++) {
         hstr[i] = (char)gSondeApp.history[(ptr + i) & 7];
     }
     hstr[8] = '\0';
-    UI_PrintStringSmallBufferNormal(hstr, gStatusLine + 36);
+    UI_PrintStringSmallBufferNormal(hstr, gStatusLine + 42);
 
     // RSSI Bar
     // Map RSSI (0-1000) to pixels (0-24)
@@ -581,7 +585,12 @@ void APP_RunRadiosonde(void)
     gSondeApp.frequency = SONDE_FREQ_DEFAULT;
     gSondeApp.step_idx = 1; // 100 kHz default
     gSondeApp.gain_mode = 0; // Auto Gain
-    gSondeApp.audio_enabled = true;
+    // Starts muted: squelch and AF filtering are disabled below regardless
+    // (needed for weak-signal FSK decode, which samples a dedicated ADC pin,
+    // not the speaker path) - so the only effect of audio_enabled is whether
+    // that raw demodulated noise is also sent to the speaker. KEY_F un-mutes
+    // it for listening for a sonde's FSK warble.
+    gSondeApp.audio_enabled = false;
     memset(gSondeApp.history, ' ', 8);
     gSondeApp.history_ptr = 0;
     gSondeApp.pending_history = '.';
@@ -619,7 +628,13 @@ void APP_RunRadiosonde(void)
     // Enable backlight and setup receiver
     BACKLIGHT_TurnOn();
     Sonde_SetupReceiver(gSondeApp.frequency);
-    AUDIO_AudioPathOn();
+    if (gSondeApp.audio_enabled) {
+        AUDIO_AudioPathOn();
+    } else {
+        // Force-mute: the main app's RX screen typically leaves this GPIO
+        // already high, so merely skipping AudioPathOn() here isn't enough.
+        AUDIO_AudioPathOff();
+    }
     Sonde_Render();
 
     // Main loop — runs until user presses EXIT
