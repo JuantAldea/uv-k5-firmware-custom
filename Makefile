@@ -89,12 +89,16 @@ endif
 # fixes out as an APRS Item (see APRS_BeaconItem in aprs_minimal.c). Off by
 # default.
 #
-# THIS NEEDS A NEWER TOOLCHAIN THAN THIS PROJECT'S OWN 10.3.1 RECOMMENDATION.
-# Measured 2026-11-18: fits with 4 bytes to spare on the official
-# `arm-gnu-toolchain-15.2.Rel1` release (f4hwn.bin = 61436/61440 bytes, gcc
-# 15.2.1) but still overflows by 28 bytes on 10.3.1 even with every cut below
-# applied. See the README's Building section. Re-measure with
-# `arm-none-eabi-size` after any change - 4 bytes is as thin as margins get.
+# THIS NEEDS A NEWER TOOLCHAIN THAN THIS PROJECT'S OWN 10.3.1 RECOMMENDATION,
+# AND WITH ENABLE_RS41_RELAY=1 (the default) IT NOW HAS ZERO BYTES OF MARGIN.
+# Measured 2026-11-18 on the official `arm-gnu-toolchain-15.2.Rel1` release
+# (gcc 15.2.1): f4hwn.bin = 61440/61440 bytes exactly. Still overflows on
+# 10.3.1 even with every cut below applied (28 bytes over as of the previous
+# measurement; re-check, this one cost 4 more). See the README's Building
+# section. `ENABLE_RS41_RELAY=0` (decode-only) is comfortably clear of this -
+# 552+ bytes - if the relay itself isn't needed. Re-measure with
+# `arm-none-eabi-size` before changing anything else in an
+# ENABLE_RS41_RELAY=1 build; there is no room left to spend.
 #
 # Getting even this far took, in order: cutting the stock flags below
 # (~1.6KB); rewriting rs41.c's ECEF->lat/lon/heading math to pure integer/

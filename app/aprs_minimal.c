@@ -1365,7 +1365,9 @@ void APRS_BeaconItem(const char *name, int32_t lat_udeg, int32_t lon_udeg, int32
     frame[idx++] = 'O';  // balloon
 
     // /A=NNNNNN - altitude in feet, clamped to the field's 6 digits.
-    int64_t feet = ((int64_t)alt_cm * 32808) / 100000;
+    // 1cm = 0.0328084ft = 32808/1000000 - caught 10x high (/100000) by the
+    // host-side frame test; verify the printed value, not just the format.
+    int64_t feet = ((int64_t)alt_cm * 32808) / 1000000;
     if (feet < 0) feet = 0;
     if (feet > 999999) feet = 999999;
     frame[idx++] = '/'; frame[idx++] = 'A'; frame[idx++] = '=';
