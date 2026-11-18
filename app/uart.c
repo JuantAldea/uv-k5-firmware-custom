@@ -657,20 +657,26 @@ static void CMD_APRS_TxRaw(const uint8_t *pBuffer, uint16_t size)
 static void CMD_APRS_Send(const uint8_t *pBuffer, bool beacon)
 {
     REPLY_ack_t Reply;
+    uint8_t ok = 1;
 
     if (!beacon) {
+#ifdef ENABLE_APRS_MSG
         const CMD_0700_t *pCmd = (const CMD_0700_t *)pBuffer;
         memcpy(gAPRS_MsgTo,   pCmd->Dest, 9);  gAPRS_MsgTo[9]   = 0;
         memcpy(gAPRS_MsgText, pCmd->Text, 30); gAPRS_MsgText[30] = 0;
         gAPRS_MsgDirty = true;   // a PC-sent message is always a new one
         APRS_SendMessage();
+#else
+        (void)pBuffer;
+        ok = 0;   // ENABLE_APRS_MSG=0: message send isn't built in
+#endif
     } else {
         APRS_TransmitNow();
     }
 
     Reply.Header.ID   = beacon ? 0x0703 : 0x0701;
     Reply.Header.Size = sizeof(Reply) - sizeof(Header_t);
-    Reply.Ok          = 1;
+    Reply.Ok          = ok;
     SendReply(&Reply, sizeof(Reply));
 }
 #endif

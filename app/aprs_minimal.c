@@ -229,16 +229,24 @@ static void APRS_TransmitBell202(const uint8_t *frame, uint16_t frame_len)
     FUNCTION_Select(FUNCTION_FOREGROUND);
 }
 
-// Message compose fields (edited via the menu, RAM only)
+// Message compose fields (edited via the menu, RAM only). gAPRS_MsgTo and
+// gAPRS_MsgDirty are shared with RX's ack handling below (it sets the reply
+// target for a later Send), so they exist whenever either side needs them.
+#if defined(ENABLE_APRS_MSG) || defined(ENABLE_APRS_RX)
 char gAPRS_MsgTo[10];
+bool gAPRS_MsgDirty;        // set when MsgTo/Msg changes; gates the {nn bump
+#endif
+#ifdef ENABLE_APRS_MSG
 char gAPRS_MsgText[31];
+#endif
 
 // Message line numbers: outgoing "{nn" counter, plus the pending acknowledgement
 // for the last numbered message addressed to us (sent from APRS_Task).
 #define APRS_MSG_MAX     34u   // 30 chars of text + "{nn" / "ack" + line number
 #define APRS_ACK_SEQ_MAX  5u   // spec allows up to 5 characters
+#ifdef ENABLE_APRS_MSG
 static uint8_t gAPRS_MsgSeq;
-bool gAPRS_MsgDirty;        // set when MsgTo/Msg changes; gates the {nn bump
+#endif
 #ifdef ENABLE_APRS_RX
 static char    gAPRS_AckTo[10];
 static char    gAPRS_AckSeq[APRS_ACK_SEQ_MAX + 1];
@@ -361,8 +369,11 @@ bool    gAPRS_RxSticky;             // direct message: stays until dismissed
 
 // The last text message addressed to us, kept so the menu can call it back up
 // after the overlay box has timed out or been dismissed. RAM only - it does not
-// survive a power cycle, which is what keeps it cheap enough to fit.
+// survive a power cycle, which is what keeps it cheap enough to fit. Written
+// by RX below, read by RecallMessage under MSG - needed by either.
+#if defined(ENABLE_APRS_MSG) || defined(ENABLE_APRS_RX)
 static char gAPRS_MsgLast[sizeof(gAPRS_RxDisplay)];
+#endif
 
 static bool     gRxArmed;
 static bool     gRxCapturing;
@@ -432,6 +443,7 @@ static void APRS_ExpireDisplay(void)
     }
 }
 
+#ifdef ENABLE_APRS_MSG
 // Menu "RdMsg": re-pop the stored message in the same overlay box a fresh one
 // uses. Deliberately not part of the decode path, so recalling a message never
 // re-acknowledges it and never touches the reply target.
@@ -442,6 +454,7 @@ void APRS_RecallMessage(void)
     gAPRS_RxDisplayTimer = 60;     // 30 s
     gUpdateDisplay       = true;
 }
+#endif
 
 // EXIT on the main screen clears a sticky message; returns true if consumed
 bool APRS_DismissMessage(void)
@@ -730,7 +743,10 @@ static void APRS_EmitMonitor(void)
 static void APRS_EmitRaw(const uint8_t *frame, uint16_t len)
 {
 #ifdef ENABLE_UART
-    static const char hex[16] = "0123456789ABCDEF";
+    // Size inferred (17, with the NUL) rather than hardcoded [16]: the array
+    // is only ever indexed, never treated as a C string, but newer GCC flags
+    // a fixed [16] here anyway (the NUL would be silently dropped).
+    static const char hex[] = "0123456789ABCDEF";
     char buf[160];
     uint16_t n = (len > 2u) ? (uint16_t)(len - 2u) : 0u;  // drop the 2-byte FCS
     if (n > 78u)
@@ -1363,7 +1379,8 @@ void APRS_BeaconItem(const char *name, int32_t lat_udeg, int32_t lon_udeg, int32
 
 // ":ADDRESSEE:text" - addressee is always padded to exactly 9 characters, as
 // every decoder (and the APRS spec) requires. Shared by the menu "Send" item
-// and the automatic acknowledgement.
+// and the automatic acknowledgement, so it's needed whenever either exists.
+#if defined(ENABLE_APRS_MSG) || defined(ENABLE_APRS_RX)
 static void APRS_TxMessage(const char *to, const char *text)
 {
     uint8_t frame[7 * 4 + 2 + 1 + 9 + 1 + APRS_MSG_MAX + 2];
@@ -1382,7 +1399,9 @@ static void APRS_TxMessage(const char *to, const char *text)
         frame[idx++] = (uint8_t)text[i];
     APRS_TxFrame(frame, idx);
 }
+#endif // ENABLE_APRS_MSG || ENABLE_APRS_RX
 
+#ifdef ENABLE_APRS_MSG
 // Send the composed text message to gAPRS_MsgTo (menu "Send" item).
 // A "{nn" line number is appended so the receiving station acknowledges it -
 // Kenwood and most software only ack numbered messages, and that ack is our
@@ -1416,6 +1435,7 @@ void APRS_SendMessage(void)
 
     gAPRSState = APRS_STATE_WAITING;
 }
+#endif // ENABLE_APRS_MSG
 
 #ifdef ENABLE_APRS_RX
 // Acknowledge a received numbered message: ":SENDER   :ackNN"

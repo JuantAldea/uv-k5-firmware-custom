@@ -72,17 +72,23 @@ void APRS_HandleRxInterrupts(uint16_t interrupt_bits);
 void APRS_StopListening(void);
 
 // Messaging
+#ifdef ENABLE_APRS_MSG
 void APRS_SendMessage(void);
-bool APRS_DismissMessage(void);
 // Re-show the last message addressed to us (menu "RdMsg"). RAM only, so it is
 // lost on a power cycle; "NO MESSAGE" if nothing has arrived this session.
 void APRS_RecallMessage(void);
+extern char gAPRS_MsgText[31];
+#endif
+bool APRS_DismissMessage(void);
 
 // "41.15N 27.84E" for the Loc menu display
 void APRS_FormatLatLon(char *out);
+#if defined(ENABLE_APRS_MSG) || defined(ENABLE_APRS_RX)
+// The reply target (set by an incoming numbered message under RX, read by
+// Send under MSG) and its dirty flag exist whenever either side needs them.
 extern char gAPRS_MsgTo[10];
 extern bool gAPRS_MsgDirty;
-extern char gAPRS_MsgText[31];
+#endif
 
 // Last decoded packet, shown on the main screen while non-empty
 extern char    gAPRS_RxDisplay[44];

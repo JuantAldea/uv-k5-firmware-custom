@@ -187,20 +187,21 @@ static uint32_t isqrt64(uint64_t v)
 
 #define FXQ          30 // Q-format bits for sin/cos ratios (|value| <= 1)
 #define ANGLE_Q      28 // Q-format bits for CORDIC angles (radians)
-// 22 iterations (not the textbook 28): verified on the host against the
-// float version this replaced, worst case ~3.3m of lat/lon error across the
-// same latitude/altitude sweep used to validate the full table - still
-// comfortably inside APRS's own ~18m wire-format resolution, and it buys
-// back 24 bytes this build's flash margin needs (see the ENABLE_RS41
-// Makefile comment).
-#define CORDIC_ITERS 22
+// 20 iterations (not the textbook 28): verified on the host against the
+// float version this replaced, worst case ~11.6m of lat/lon error across the
+// same latitude/altitude sweep used to validate the full table - still under
+// APRS's own ~18m wire-format resolution, though with less margin than 22+
+// iterations gave (~3.3m there). Traded down from 22 for the flash this
+// build's margin needs (see the ENABLE_RS41 Makefile comment) - go back up
+// first if this ever gets another few bytes to spare.
+#define CORDIC_ITERS 20
 
-// atan(2^-i) for i=0..21, in Q28 radians (generated with atan()/double on a
+// atan(2^-i) for i=0..19, in Q28 radians (generated with atan()/double on a
 // host, not computed on-device).
 static const int32_t atan_table_q28[CORDIC_ITERS] = {
     210828714, 124459457, 65760959, 33381290, 16755422, 8385879, 4193963,
     2097109, 1048571, 524287, 262144, 131072, 65536, 32768, 16384, 8192,
-    4096, 2048, 1024, 512, 256, 128
+    4096, 2048, 1024, 512
 };
 static const int32_t ANGLE_PI_Q28 = 843314857; // round(pi * 2^28)
 

@@ -87,9 +87,16 @@ The full register recipe, frame format and decoder details are documented in
 
 ## Building
 
-`arm-none-eabi-gcc` **10.3.1** is recommended (other versions may produce a
-binary that is too large for the 60 KB flash). On macOS, `brew install
-arm-none-eabi-gcc` works.
+`arm-none-eabi-gcc` **10.3.1** is recommended for the editions above (other
+versions may produce a binary that is too large for the 60 KB flash). On
+macOS, `brew install arm-none-eabi-gcc` works.
+
+**`ENABLE_RS41=1` needs a newer compiler than 10.3.1** — confirmed fitting
+(4 bytes to spare) on the official `arm-gnu-toolchain-15.2.Rel1` release;
+10.3.1 overflows by 28 bytes on that config even after every cut documented
+in the Makefile. If you're building the RS41 relay, grab the current release
+from [Arm's GNU Toolchain downloads](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads)
+instead.
 
 ```bash
 make                     # APRS edition — this is the default build

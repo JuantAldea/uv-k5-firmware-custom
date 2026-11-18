@@ -59,10 +59,12 @@ const t_menu_item MenuList[] =
     {"SSID",    MENU_APRS_SSID      },
     {"Loc",     MENU_APRS_LOC       },
     {"Cmnt",    MENU_APRS_CMNT      },
+#ifdef ENABLE_APRS_MSG
     {"MsgTo",   MENU_APRS_MSGTO     },
     {"Msg",     MENU_APRS_MSGTXT    },
     {"Send",    MENU_APRS_MSGSND    },
     {"RdMsg",   MENU_APRS_MSGRD     },
+#endif
     {"BEACON",  MENU_APRS_TX        },
 #endif
 //   text,          menu ID
@@ -1210,6 +1212,7 @@ void UI_DisplayMenu(void)
             strcpy(String, "PHONE\nTO MIC");
             break;
 #endif
+#ifdef ENABLE_APRS_MSG
         case MENU_APRS_MSGSND:
             strcpy(String, "SEND\nMESSAGE");
             break;
@@ -1228,6 +1231,7 @@ void UI_DisplayMenu(void)
             else
                 sprintf(String, "%-10.10s", gAPRS_MsgText);
             break;
+#endif
         case MENU_APRS_INTV:
             if (gSubMenuSelection == 0)
                 strcpy(String, "OFF");

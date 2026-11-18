@@ -54,9 +54,15 @@ static int APRS_EditMaxLen(int id, int *dot_pos)
     int dot = -1, len = 0;
     switch (id) {
         case MENU_APRS_CALL:
-        case MENU_APRS_MSGTO:  len = 9;          break;
+#ifdef ENABLE_APRS_MSG
+        case MENU_APRS_MSGTO:
+#endif
+                                len = 9;          break;
         case MENU_APRS_CMNT:
-        case MENU_APRS_MSGTXT: len = 31;          break;
+#ifdef ENABLE_APRS_MSG
+        case MENU_APRS_MSGTXT:
+#endif
+                                len = 31;          break;
         case MENU_APRS_LOC:    len = 15; dot = 15; break;  // numeric, no dot
     }
     if (dot_pos)
@@ -407,7 +413,9 @@ int MENU_GetLimits(uint8_t menu_id, int32_t *pMin, int32_t *pMax)
         case MENU_APRS_DIGI:
 #endif
         case MENU_APRS_TX:
+#ifdef ENABLE_APRS_MSG
         case MENU_APRS_MSGSND:
+#endif
 #ifdef ENABLE_APRS_ACOUSTIC
         case MENU_APRS_ACIN:
 #endif
@@ -1012,6 +1020,7 @@ void MENU_AcceptSetting(void)
                 gEeprom.APRS_COMMENT[len] = 0;
             }
             break;
+#ifdef ENABLE_APRS_MSG
         case MENU_APRS_MSGTO:
             {
                 uint8_t o = 0;
@@ -1043,6 +1052,7 @@ void MENU_AcceptSetting(void)
             if (gSubMenuSelection == 1)
                 APRS_SendMessage();
             break;
+#endif
         case MENU_APRS_TX:
             // Trigger manual transmission (toggle behavior)
             if (gSubMenuSelection == 1) {
@@ -1140,7 +1150,9 @@ void MENU_AcceptSetting(void)
 #endif
         case MENU_APRS_ON:   case MENU_APRS_INTV: case MENU_APRS_CALL:
         case MENU_APRS_SSID:  case MENU_APRS_LOC: case MENU_APRS_CMNT:
+#ifdef ENABLE_APRS_MSG
         case MENU_APRS_MSGTO: case MENU_APRS_MSGTXT:
+#endif
             SETTINGS_SaveAPRS();
             break;
         default:
@@ -1474,14 +1486,18 @@ void MENU_ShowCurrentSetting(void)
         case MENU_APRS_CMNT:
             strcpy(edit, gEeprom.APRS_COMMENT);
             break;
+#ifdef ENABLE_APRS_MSG
         case MENU_APRS_MSGTO:
             strcpy(edit, gAPRS_MsgTo);
             break;
         case MENU_APRS_MSGTXT:
             strcpy(edit, gAPRS_MsgText);
             break;
+#endif
         case MENU_APRS_TX:
+#ifdef ENABLE_APRS_MSG
         case MENU_APRS_MSGSND:
+#endif
 #ifdef ENABLE_APRS_ACOUSTIC
         case MENU_APRS_ACIN:
 #endif
@@ -1963,6 +1979,7 @@ static void MENU_Key_MENU(const bool bKeyPressed, const bool bKeyHeld)
             APRS_TransmitNow();
             return;
         }
+#ifdef ENABLE_APRS_MSG
         if (UI_MENU_GetCurrentMenuId() == MENU_APRS_MSGSND) {
             APRS_SendMessage();
             return;
@@ -1974,6 +1991,7 @@ static void MENU_Key_MENU(const bool bKeyPressed, const bool bKeyHeld)
             gRequestDisplayScreen = DISPLAY_MAIN;
             return;
         }
+#endif
 #ifdef ENABLE_APRS_ACOUSTIC
         // Blocking listen: the radio is deaf and unresponsive for up to 15 s,
         // which is why it is an explicit action rather than a background mode.
@@ -2069,6 +2087,7 @@ static void MENU_Key_MENU(const bool bKeyPressed, const bool bKeyHeld)
                     while (edit_index < 31)
                         edit[edit_index++] = ' ';
                     break;
+#ifdef ENABLE_APRS_MSG
                 case MENU_APRS_MSGTO:
                     strcpy(edit, gAPRS_MsgTo);
                     edit_index = strlen(edit);
@@ -2081,6 +2100,7 @@ static void MENU_Key_MENU(const bool bKeyPressed, const bool bKeyHeld)
                     while (edit_index < 31)
                         edit[edit_index++] = ' ';
                     break;
+#endif
             }
             edit[edit_index] = 0;
             edit_index = 0;  // cursor position
@@ -2205,8 +2225,10 @@ static void MENU_Key_STAR(const bool bKeyPressed, const bool bKeyHeld)
 #ifdef ENABLE_APRS
     if (gIsInSubMenu && edit_index >= 0 &&
         (UI_MENU_GetCurrentMenuId() == MENU_APRS_CALL ||
+#ifdef ENABLE_APRS_MSG
          UI_MENU_GetCurrentMenuId() == MENU_APRS_MSGTO ||
          UI_MENU_GetCurrentMenuId() == MENU_APRS_MSGTXT ||
+#endif
          UI_MENU_GetCurrentMenuId() == MENU_APRS_CMNT))
     {
         const int menu_id = UI_MENU_GetCurrentMenuId();
@@ -2303,7 +2325,11 @@ static void MENU_Key_UP_DOWN(bool bKeyPressed, bool bKeyHeld, int8_t Direction)
             if (digit > max_digit) digit = 0;
             edit[edit_index] = '0' + digit;
         }
-        else if (menu_id == MENU_APRS_CALL || menu_id == MENU_APRS_MSGTO)
+        else if (menu_id == MENU_APRS_CALL
+#ifdef ENABLE_APRS_MSG
+                 || menu_id == MENU_APRS_MSGTO
+#endif
+                )
         {   // callsign: cycle through a restricted charset
             const char *allowed = " _0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
             char c = edit[edit_index];

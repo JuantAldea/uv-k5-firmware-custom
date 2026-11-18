@@ -608,11 +608,13 @@ void SETTINGS_SaveVfoIndices(void)
 #define APRS_EE_A 0x0E30
 #define APRS_EE_B 0x0F20
 
+#ifdef ENABLE_APRS_MSG
 extern char gAPRS_MsgTo[10];
+extern char gAPRS_MsgText[31];
+#endif
 #ifdef ENABLE_APRS_DIGI
 extern bool gAPRS_DIGI;
 #endif
-extern char gAPRS_MsgText[31];
 
 void SETTINGS_SaveAPRS(void)
 {
@@ -625,7 +627,9 @@ void SETTINGS_SaveAPRS(void)
     memcpy(&State[3],  gEeprom.APRS_CALLSIGN, 7);
     memcpy(&State[10], &gEeprom.APRS_LATITUDE,  sizeof(int32_t));
     memcpy(&State[16], &gEeprom.APRS_LONGITUDE, sizeof(int32_t));
+#ifdef ENABLE_APRS_MSG
     memcpy(&State[20], gAPRS_MsgTo, 10);
+#endif
 #ifdef ENABLE_APRS_DIGI
     State[14] = gAPRS_DIGI ? 1 : 0;   // one of the four documented spare bytes
 #endif
@@ -649,7 +653,9 @@ void SETTINGS_LoadAPRS(void)
 
     // comment + message text are never persisted; start from defaults
     strcpy(gEeprom.APRS_COMMENT, "UV-K5 APRS");
+#ifdef ENABLE_APRS_MSG
     gAPRS_MsgText[0] = 0;
+#endif
 
     if (is_valid) {
         gEeprom.APRS_ON       = (State[0] == 1);
@@ -659,13 +665,15 @@ void SETTINGS_LoadAPRS(void)
         gEeprom.APRS_CALLSIGN[6] = 0;
         memcpy(&gEeprom.APRS_LATITUDE,  &State[10], sizeof(int32_t));
         memcpy(&gEeprom.APRS_LONGITUDE, &State[16], sizeof(int32_t));
+#ifdef ENABLE_APRS_MSG
         memcpy(gAPRS_MsgTo, &State[20], 10);
         gAPRS_MsgTo[9] = 0;
+        if ((uint8_t)gAPRS_MsgTo[0] == 0xFF)
+            gAPRS_MsgTo[0] = 0;
+#endif
 #ifdef ENABLE_APRS_DIGI
         gAPRS_DIGI = (State[14] == 1);   // 0xFF on radios saved before this build
 #endif
-        if ((uint8_t)gAPRS_MsgTo[0] == 0xFF)
-            gAPRS_MsgTo[0] = 0;
     } else {
         // Neutral defaults for a fresh/wiped radio: the operator MUST set their
         // own callsign before the firmware will transmit (see APRS_Configured).
@@ -675,7 +683,9 @@ void SETTINGS_LoadAPRS(void)
         gEeprom.APRS_SSID      = 0;
         gEeprom.APRS_LATITUDE  = 0;
         gEeprom.APRS_LONGITUDE = 0;
+#ifdef ENABLE_APRS_MSG
         gAPRS_MsgTo[0]         = 0;
+#endif
         SETTINGS_SaveAPRS();
     }
 }
