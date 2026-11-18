@@ -1329,7 +1329,7 @@ void APRS_BeaconAt(int32_t lat_udeg, int32_t lon_udeg)
     gAPRSState = APRS_STATE_WAITING;
 }
 
-#ifdef ENABLE_RS41
+#ifdef ENABLE_RS41_RELAY
 // Report a third party's position (e.g. a tracked radiosonde) as an APRS
 // Item, not a plain position beacon: this station isn't physically at
 // (lat,lon), so claiming "!" (my position) would be wrong. An Item needs no
@@ -1375,7 +1375,7 @@ void APRS_BeaconItem(const char *name, int32_t lat_udeg, int32_t lon_udeg, int32
     APRS_TxFrame(frame, idx);
     gAPRSState = APRS_STATE_WAITING;
 }
-#endif // ENABLE_RS41
+#endif // ENABLE_RS41_RELAY
 
 // ":ADDRESSEE:text" - addressee is always padded to exactly 9 characters, as
 // every decoder (and the APRS spec) requires. Shared by the menu "Send" item

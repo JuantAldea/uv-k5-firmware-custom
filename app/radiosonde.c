@@ -5,7 +5,7 @@
 
 #include "radiosonde.h"
 #include "rs41.h"
-#ifdef ENABLE_APRS
+#if defined(ENABLE_APRS) && defined(ENABLE_RS41_RELAY)
 // Must come before driver/bk4819.h: both define APRS_MAX_PACKET_SIZE, and
 // only bk4819.h's #define is guarded against a prior definition.
 #include "aprs_minimal.h"
@@ -93,7 +93,7 @@ static void Sonde_DrawStatusBar(void) {
     // Title - "*" marks the APRS relay armed (PTT toggles it). Reusing this
     // same call for the indicator (rather than a separate draw) matters at
     // our flash margin: see the ENABLE_RS41 note in the Makefile.
-#ifdef ENABLE_APRS
+#if defined(ENABLE_APRS) && defined(ENABLE_RS41_RELAY)
     UI_PrintStringSmallBufferNormal(gSondeApp.relay_armed ? "SONDE*" : "SONDE", gStatusLine);
 #else
     UI_PrintStringSmallBufferNormal("SONDE", gStatusLine);
@@ -414,7 +414,7 @@ __attribute__((unused)) static uint8_t Sonde_ReadBit(void)
 
 static bool Sonde_HandleKeys(void)
 {
-#ifdef ENABLE_APRS
+#if defined(ENABLE_APRS) && defined(ENABLE_RS41_RELAY)
     // PTT isn't in KEY_Code_t here (KEYBOARD_Poll never returns KEY_PTT), so
     // it's read straight off the GPIO like the main app does. Edge-triggered:
     // arms/disarms the auto-relay in APP_RunRadiosonde, doesn't transmit here.
@@ -744,7 +744,7 @@ void APP_RunRadiosonde(void)
             if (save_cooldown > 0) {
                 save_cooldown--;
             }
-#ifdef ENABLE_APRS
+#if defined(ENABLE_APRS) && defined(ENABLE_RS41_RELAY)
             if (gSondeApp.relay_cooldown > 0) {
                 gSondeApp.relay_cooldown--;
             }
@@ -770,7 +770,7 @@ void APP_RunRadiosonde(void)
                     }
                 }
 
-#ifdef ENABLE_APRS
+#if defined(ENABLE_APRS) && defined(ENABLE_RS41_RELAY)
                 // Relay the fix over APRS: armed (PTT toggle), a real fix, not
                 // transmitting faster than once every 30s (shared-channel
                 // etiquette - RS41 itself updates roughly every second, far

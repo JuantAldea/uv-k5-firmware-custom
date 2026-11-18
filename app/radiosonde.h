@@ -44,7 +44,7 @@ typedef struct {
     bool     hpf_compensation;
     uint8_t  lpf_mode;         // 0: 4.5kHz (WID), 1: 3.0kHz (MID), 2: 2.5kHz (NAR)
 
-#ifdef ENABLE_APRS
+#if defined(ENABLE_APRS) && defined(ENABLE_RS41_RELAY)
     bool     relay_armed;      // PTT toggles this: auto-relay fixes over APRS
     uint16_t relay_cooldown;   // seconds until the next relay is allowed
 #endif

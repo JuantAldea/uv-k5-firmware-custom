@@ -113,13 +113,29 @@ endif
 # instead of ~3.3m - still under APRS's own ~18m wire-format resolution, but
 # with less room than 22+ iterations gave; see the CORDIC_ITERS comment in
 # rs41.c, and raise it back first if this build ever gets a few bytes back).
+#
+# If you don't need the relay, `make ENABLE_RS41=1 ENABLE_RS41_RELAY=0`
+# builds a decode-only monitor with 552 more bytes to spare - see the
+# ENABLE_RS41_RELAY comment below for why that's worth doing even when flash
+# isn't the concern.
 # RS41's "scan to open geo: link" QR-code screen (KEY_9 inside the app).
 # Off by default even when ENABLE_RS41=1 - the ~1.3KB from miniqr.c plus the
 # render code in radiosonde.c is real flash the amateur-band image doesn't
 # have to spare (see the ENABLE_RS41 comment above).
 ENABLE_RS41_QR                  ?= 0
+# Auto-relay a decoded fix out over APRS (PTT arms/disarms it - see
+# APP_RunRadiosonde in radiosonde.c and APRS_BeaconItem in aprs_minimal.c).
+# On by default whenever ENABLE_RS41=1, since that's the point of this
+# firmware; `make ENABLE_RS41=1 ENABLE_RS41_RELAY=0` builds a decode-only
+# radiosonde monitor instead, for two real reasons, not just the ~400-450
+# bytes it saves (APRS_BeaconItem alone is 356 bytes, non-LTO measured):
+# receiving RS41 telemetry needs no licence, but transmitting it over APRS
+# does, so this lets an unlicensed listener leave the transmit path out
+# entirely rather than just trusting the PTT-armed gate never to fire.
+ENABLE_RS41_RELAY               ?= 0
 ENABLE_RS41                     ?= 0
 ifeq ($(ENABLE_RS41),1)
+    ENABLE_RS41_RELAY := 1
     ENABLE_AM_FIX := 0
     ENABLE_RSSI_BAR := 0
     ENABLE_UART_RC := 0
@@ -530,6 +546,9 @@ ifeq ($(ENABLE_APRS_ACOUSTIC),1)
 endif
 ifeq ($(ENABLE_RS41),1)
 	CFLAGS  += -DENABLE_RS41
+endif
+ifeq ($(ENABLE_RS41_RELAY),1)
+	CFLAGS  += -DENABLE_RS41_RELAY
 endif
 ifeq ($(ENABLE_RS41_QR),1)
 	CFLAGS  += -DENABLE_RS41_QR
